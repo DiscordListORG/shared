@@ -1,31 +1,47 @@
 package org.discordlist.cloud.shared.models.discord
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Role
+import org.discordlist.cloud.shared.models.SerializableModel
 
 data class RoleModel(
     val id: Long,
     val name: String,
     val mention: String,
     val color: Int,
-    val hoist: Boolean,
     val position: Int,
-    val permissions: Long,
+    val positionRaw: Int,
+    val permissionsRaw: Long,
+    val permissions: List<Permission>,
     val managed: Boolean,
-    val mentionable: Boolean
-) {
+    val hoisted: Boolean,
+    val mentionable: Boolean,
+    val public: Boolean,
+    val guildId: Long
+): SerializableModel() {
 
     companion object {
         fun fromRole(role: Role): RoleModel {
             return RoleModel(
                 role.idLong,
                 role.name,
+                role.asMention,
                 role.colorRaw,
-                role.isHoisted,
                 role.position,
+                role.positionRaw,
                 role.permissionsRaw,
+                role.permissions,
                 role.isManaged,
-                role.isMentionable
+                role.isHoisted,
+                role.isMentionable,
+                role.isPublicRole,
+                role.guild.idLong
             )
+        }
+
+        fun fromJSON(data: String): RoleModel {
+            return jacksonObjectMapper().readValue(data, RoleModel::class.java)
         }
     }
 }
