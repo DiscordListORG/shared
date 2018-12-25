@@ -1,4 +1,4 @@
-package org.discordlist.cloud.shared.models.discord
+package org.discordlist.cloud.shared.models.discord.guild
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import net.dv8tion.jda.core.Permission
@@ -22,21 +22,21 @@ data class RoleModel(
 ): SerializableModel() {
 
     companion object {
-        fun fromRole(role: Role): RoleModel {
+        fun of(role: Role): RoleModel {
             return RoleModel(
-                role.idLong,
-                role.name,
-                role.asMention,
-                role.colorRaw,
-                role.position,
-                role.positionRaw,
-                role.permissionsRaw,
-                role.permissions,
-                role.isManaged,
-                role.isHoisted,
-                role.isMentionable,
-                role.isPublicRole,
-                role.guild.idLong
+                    role.idLong,
+                    role.name,
+                    role.asMention,
+                    role.colorRaw,
+                    role.position,
+                    role.positionRaw,
+                    role.permissionsRaw,
+                    role.permissions,
+                    role.isManaged,
+                    role.isHoisted,
+                    role.isMentionable,
+                    role.isPublicRole,
+                    role.guild.idLong
             )
         }
 
