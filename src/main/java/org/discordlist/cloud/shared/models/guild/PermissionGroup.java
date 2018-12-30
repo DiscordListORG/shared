@@ -17,7 +17,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-package org.discordlist.cloud.shared.test.models.guild;
+package org.discordlist.cloud.shared.models.guild;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

@@ -1,5 +1,5 @@
 /*
- * Gateway - The gateway service between the Discord API and the discordlist.org nodes.
+ * Shared files of the DLO Project
  *
  * Copyright (C) 2018  Yannick Seeger & Michael Rittmeister
  *
@@ -17,7 +17,7 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-package org.discordlist.cloud.shared.test;
+package org.discordlist.cloud.shared;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
