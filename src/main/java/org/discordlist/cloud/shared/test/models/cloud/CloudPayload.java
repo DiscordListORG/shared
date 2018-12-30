@@ -19,6 +19,7 @@
 
 package org.discordlist.cloud.shared.test.models.cloud;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.discordlist.cloud.shared.test.JsonSerializable;
 
@@ -28,10 +29,10 @@ import java.util.Objects;
 public class CloudPayload extends JsonSerializable {
 
     private String event;
-    private String data;
+    private JsonNode data;
     private long sentAt;
 
-    public CloudPayload(String event, String data, long sentAt) {
+    public CloudPayload(String event, JsonNode data, long sentAt) {
         this.event = event;
         this.data = data;
         this.sentAt = sentAt;
@@ -44,7 +45,7 @@ public class CloudPayload extends JsonSerializable {
         return event;
     }
 
-    public String getData() {
+    public JsonNode getData() {
         return data;
     }
 
