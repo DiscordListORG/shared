@@ -20,6 +20,8 @@
 package org.discordlist.cloud.shared.io.redis;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.function.Consumer;
 
@@ -27,7 +29,7 @@ public class RedisSource {
 
     private final String host;
     private final String password;
-    private Jedis jedis;
+    private JedisPool jedis;
 
     public RedisSource(String host, String password) {
         this.host = host;
@@ -35,12 +37,31 @@ public class RedisSource {
     }
 
     public void connect(Consumer<RedisSource> onSuccess) {
-        jedis = new Jedis(host);
-        jedis.auth(password);
+        var config = new JedisPoolConfig();
+        config.setMaxTotal(8);
+        config.setMaxIdle(8);
+        jedis = new JedisPool(host);
         onSuccess.accept(this);
     }
 
-    public Jedis getJedis() {
+    /**
+     * <strong>NOT RECOMMENDED</strong>
+     * Use getJedis() method instead
+     * @see RedisSource#getJedis()
+     * @return The JedisPool
+     */
+    @Deprecated
+    public JedisPool getJedisPool() {
         return jedis;
+    }
+
+    /**
+     * Get a new Redis instance from pool and authenticates the connection
+     * @return The Jedis connection
+     */
+    public Jedis getJedis() {
+        var resource = jedis.getResource();
+        resource.auth(password);
+        return resource;
     }
 }
