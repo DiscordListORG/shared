@@ -37,7 +37,7 @@ public class RedisSource {
     }
 
     public void connect(Consumer<RedisSource> onSuccess) {
-        var config = new JedisPoolConfig();
+        JedisPoolConfig config = new JedisPoolConfig();
         config.setMaxTotal(8);
         config.setMaxIdle(8);
         jedis = new JedisPool(host);
