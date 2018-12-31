@@ -60,7 +60,7 @@ public class RedisSource {
      * @return The Jedis connection
      */
     public Jedis getJedis() {
-        var resource = jedis.getResource();
+        Jedis resource = jedis.getResource();
         resource.auth(password);
         return resource;
     }
