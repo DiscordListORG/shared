@@ -22,13 +22,13 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <servers>
     <server>
-      <username>$CI_ARTIFACTORY_NAME</username>
-      <password>$CI_ARTIFACTORY_PASSWORD</password>
+      <username>${env.MAVEN_REPO_USER}</username>
+      <password>${env.MAVEN_REPO_PASS}</password>
       <id>central</id>
     </server>
     <server>
-      <username>$CI_ARTIFACTORY_NAME</username>
-      <password>$CI_ARTIFACTORY_PASSWORD</password>
+      <username>${env.MAVEN_REPO_USER}</username>
+      <password>${env.MAVEN_REPO_PASS}</password>
       <id>snapshots</id>
     </server>
   </servers>
