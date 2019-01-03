@@ -13,7 +13,7 @@ build:
   script:
     - "mvn $MAVEN_CLI_OPTS compile"
 pages:
-  stage: pages
+  stage: deploy
   script:
     - "mvn javadoc:javadoc"
     - "mv target/site/apidoc public/"
@@ -21,6 +21,7 @@ pages:
     paths:
       - "public"
 deploy:
+  stage: deploy
   image: maven:3.3.9-jdk-8
   script:
     - "mvn deploy"
