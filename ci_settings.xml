@@ -17,19 +17,60 @@
   ~ along with this program.  If not, see https://www.gnu.org/licenses/.
   -->
 
-<settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
-    <servers>
-        <server>
-            <id>gitlab-maven</id>
-            <configuration>
-                <httpHeaders>
-                    <property>
-                        <name>Job-Token</name>
-                        <value>${env.CI_JOB_TOKEN}</value>
-                    </property>
-                </httpHeaders>
-            </configuration>
-        </server>
-    </servers>
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.1.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <servers>
+    <server>
+      <username>$CI_ARTIFACTORY_NAME</username>
+      <password>$CI_ARTIFACTORY_PASSWORD</password>
+      <id>central</id>
+    </server>
+    <server>
+      <username>$CI_ARTIFACTORY_NAME</username>
+      <password>$CI_ARTIFACTORY_PASSWORD</password>
+      <id>snapshots</id>
+    </server>
+  </servers>
+  <profiles>
+    <profile>
+      <repositories>
+        <repository>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <id>central</id>
+          <name>gradle-release</name>
+          <url>https://discordlist.jfrog.io/discordlist/gradle-release</url>
+        </repository>
+        <repository>
+          <snapshots />
+          <id>snapshots</id>
+          <name>gradle-dev</name>
+          <url>https://discordlist.jfrog.io/discordlist/gradle-dev</url>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+          <id>central</id>
+          <name>gradle-release</name>
+          <url>https://discordlist.jfrog.io/discordlist/gradle-release</url>
+        </pluginRepository>
+        <pluginRepository>
+          <snapshots />
+          <id>snapshots</id>
+          <name>gradle-dev</name>
+          <url>https://discordlist.jfrog.io/discordlist/gradle-dev</url>
+        </pluginRepository>
+      </pluginRepositories>
+      <id>artifactory</id>
+    </profile>
+  </profiles>
+  <activeProfiles>
+    <activeProfile>artifactory</activeProfile>
+  </activeProfiles>
 </settings>
+

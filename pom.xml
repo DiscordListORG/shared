@@ -92,16 +92,15 @@
     </build>
 
     <distributionManagement>
-        <repository>
-            <id>gitlab-maven</id>
-            <!--suppress UnresolvedMavenProperty -->
-            <url>https://gitlab.discordlist.org/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
-        </repository>
-        <snapshotRepository>
-            <id>gitlab-maven</id>
-            <!--suppress UnresolvedMavenProperty -->
-            <url>https://gitlab.discordlist.org/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
-        </snapshotRepository>
-    </distributionManagement>
-
+    <repository>
+        <id>central</id>
+        <name>artifactory.discordlist.org-releases</name>
+        <url>https://discordlist.jfrog.io/discordlist/maven</url>
+    </repository>
+    <snapshotRepository>
+        <id>snapshots</id>
+        <name>artifactory.discordlist.org-snapshots</name>
+        <url>https://discordlist.jfrog.io/discordlist/maven</url>
+    </snapshotRepository>
+</distributionManagement>
 </project>
