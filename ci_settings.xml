@@ -40,14 +40,14 @@
             <enabled>false</enabled>
           </snapshots>
           <id>central</id>
-          <name>gradle-release</name>
-          <url>https://discordlist.jfrog.io/discordlist/gradle-release</url>
+          <name>public</name>
+          <url>https://discordlist.jfrog.io/discordlist/public</url>
         </repository>
         <repository>
           <snapshots />
           <id>snapshots</id>
-          <name>gradle-dev</name>
-          <url>https://discordlist.jfrog.io/discordlist/gradle-dev</url>
+          <name>public</name>
+          <url>https://discordlist.jfrog.io/discordlist/public</url>
         </repository>
       </repositories>
       <pluginRepositories>
@@ -56,14 +56,14 @@
             <enabled>false</enabled>
           </snapshots>
           <id>central</id>
-          <name>gradle-release</name>
-          <url>https://discordlist.jfrog.io/discordlist/gradle-release</url>
+          <name>public</name>
+          <url>https://discordlist.jfrog.io/discordlist/public</url>
         </pluginRepository>
         <pluginRepository>
           <snapshots />
           <id>snapshots</id>
-          <name>gradle-dev</name>
-          <url>https://discordlist.jfrog.io/discordlist/gradle-dev</url>
+          <name>public</name>
+          <url>https://discordlist.jfrog.io/discordlist/public</url>
         </pluginRepository>
       </pluginRepositories>
       <id>artifactory</id>
@@ -73,4 +73,5 @@
     <activeProfile>artifactory</activeProfile>
   </activeProfiles>
 </settings>
+
 
