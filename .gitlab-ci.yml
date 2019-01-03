@@ -11,7 +11,10 @@ cache:
 build:
   stage: build
   script:
-    - "mvn $MAVEN_CLI_OPTS compile"
+    - "mvn $MAVEN_CLI_OPTS compile package"
+  artifacts:
+    paths:
+      - "target/*.jar"
 pages:
   stage: deploy
   script:
@@ -24,7 +27,7 @@ deploy:
   stage: deploy
   image: maven:3.3.9-jdk-8
   script:
-    - "mvn deploy"
+    - "mvn $MAVEN_CLI_OPTS deploy"
   only:
     - master
     - develop
