@@ -38,8 +38,8 @@ public class RedisSource {
 
     public void connect(Consumer<RedisSource> onSuccess) {
         JedisPoolConfig config = new JedisPoolConfig();
-        config.setMaxTotal(8);
-        config.setMaxIdle(8);
+        config.setMaxTotal(15);
+        config.setMaxIdle(15);
         jedis = new JedisPool(host);
         onSuccess.accept(this);
     }
