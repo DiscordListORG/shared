@@ -1,7 +1,38 @@
+image: maven:3.3.9-jdk-8
+
+variables:
+  MAVEN_CLI_OPTS: "-s ci_settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+stages:
+  - build
+  - pages
+  - deploy
+
+cache:
+  paths:
+    - .m2/repository
+    - target/
+build:
+  stage: build
+  script:
+    - "mvn $MAVEN_CLI_OPTS compile package"
+  artifacts:
+    paths:
+      - "target/*.jar"
+pages:
+  stage: pages
+  script:
+    - "mvn $MAVEN_CLI_OPTS javadoc:javadoc"
+    - "mv ./target/site/apidocs public/"
+  artifacts:
+    paths:
+      - "public"
 deploy:
+  stage: deploy
   image: maven:3.3.9-jdk-8
   script:
-    - 'mvn deploy -s ci_settings.xml'
+    - "mvn $MAVEN_CLI_OPTS deploy"
   only:
     - master
     - develop
