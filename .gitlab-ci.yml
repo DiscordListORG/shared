@@ -4,6 +4,11 @@ variables:
   MAVEN_CLI_OPTS: "-s ci_settings.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
+stages:
+  - build
+  - pages
+  - deploy
+
 cache:
   paths:
     - .m2/repository
@@ -16,10 +21,10 @@ build:
     paths:
       - "target/*.jar"
 pages:
-  stage: deploy
+  stage: pages
   script:
     - "mvn $MAVEN_CLI_OPTS javadoc:javadoc"
-    - "mv target/site/apidoc public/"
+    - "mv ./target/site/apidoc public/"
   artifacts:
     paths:
       - "public"
