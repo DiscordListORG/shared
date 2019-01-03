@@ -23,12 +23,12 @@
   <servers>
     <server>
       <username>$CI_ARTIFACTORY_NAME</username>
-      <password>${security.getEscapedEncryptedPassword()!"$CI_ARTIFACTORY_PASSWORD"</password>
+      <password>$CI_ARTIFACTORY_PASSWORD</password>
       <id>central</id>
     </server>
     <server>
       <username>$CI_ARTIFACTORY_NAME</username>
-      <password>${security.getEscapedEncryptedPassword()!"$CI_ARTIFACTORY_PASSWORD"</password>
+      <password>$CI_ARTIFACTORY_PASSWORD</password>
       <id>snapshots</id>
     </server>
   </servers>
