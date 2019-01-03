@@ -32,46 +32,6 @@
       <id>snapshots</id>
     </server>
   </servers>
-  <profiles>
-    <profile>
-      <repositories>
-        <repository>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <id>central</id>
-          <name>public</name>
-          <url>https://discordlist.jfrog.io/discordlist/public</url>
-        </repository>
-        <repository>
-          <snapshots />
-          <id>snapshots</id>
-          <name>public</name>
-          <url>https://discordlist.jfrog.io/discordlist/public</url>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <id>central</id>
-          <name>public</name>
-          <url>https://discordlist.jfrog.io/discordlist/public</url>
-        </pluginRepository>
-        <pluginRepository>
-          <snapshots />
-          <id>snapshots</id>
-          <name>public</name>
-          <url>https://discordlist.jfrog.io/discordlist/public</url>
-        </pluginRepository>
-      </pluginRepositories>
-      <id>artifactory</id>
-    </profile>
-  </profiles>
-  <activeProfiles>
-    <activeProfile>artifactory</activeProfile>
-  </activeProfiles>
 </settings>
 
 
