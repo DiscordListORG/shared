@@ -17,11 +17,11 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-package org.discordlist.cloud.shared.test.models.guild;
+package org.discordlist.cloud.shared.models.guild;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.discordlist.cloud.shared.test.JsonSerializable;
+import org.discordlist.cloud.shared.JsonSerializable;
 
 import java.io.IOException;
 import java.util.Objects;

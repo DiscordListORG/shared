@@ -17,21 +17,20 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-package org.discordlist.cloud.shared.test.models.cloud;
+package org.discordlist.cloud.shared.models.cloud;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.discordlist.cloud.shared.test.JsonSerializable;
+import org.discordlist.cloud.shared.JsonSerializable;
 
 import java.io.IOException;
-import java.util.Objects;
 
 public class CloudPayload extends JsonSerializable {
 
     private String event;
-    private String data;
+    private byte[] data;
     private long sentAt;
 
-    public CloudPayload(String event, String data, long sentAt) {
+    public CloudPayload(String event, byte[] data, long sentAt) {
         this.event = event;
         this.data = data;
         this.sentAt = sentAt;
@@ -44,7 +43,7 @@ public class CloudPayload extends JsonSerializable {
         return event;
     }
 
-    public String getData() {
+    public byte[] getData() {
         return data;
     }
 
@@ -57,25 +56,10 @@ public class CloudPayload extends JsonSerializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CloudPayload that = (CloudPayload) o;
-        return sentAt == that.sentAt &&
-                Objects.equals(event, that.event) &&
-                Objects.equals(data, that.data);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(event, data, sentAt);
-    }
-
-    @Override
     public String toString() {
         return "CloudPayload{" +
                 "event='" + event + '\'' +
-                ", data='" + data + '\'' +
+                ", data=" + new String(data) +
                 ", sentAt=" + sentAt +
                 '}';
     }

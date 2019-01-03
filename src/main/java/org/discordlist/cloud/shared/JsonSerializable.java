@@ -17,24 +17,20 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-package org.discordlist.cloud.shared.test;
+package org.discordlist.cloud.shared;
 
-import org.discordlist.cloud.shared.test.models.cloud.CloudPayload;
-import org.junit.Test;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
+public abstract class JsonSerializable {
 
-public class CloudPayloadTest {
+    private final ObjectMapper objectMapper;
 
-    @Test
-    public void testCloudPayloadConverting() throws IOException {
+    public JsonSerializable() {
+        objectMapper = new ObjectMapper();
+    }
 
-        CloudPayload cloudPayload = new CloudPayload("TEST", "{\"aad\": \"badadawd\"}", 1337L);
-        // Serialization
-        String jsonData = cloudPayload.toJson();
-        System.out.println(jsonData);
-
-        // Deserialization
-        System.out.println(CloudPayload.fromJson(jsonData));
+    public String toJson() throws JsonProcessingException {
+        return objectMapper.writeValueAsString(this);
     }
 }

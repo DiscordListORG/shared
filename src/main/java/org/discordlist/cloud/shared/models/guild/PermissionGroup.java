@@ -1,5 +1,5 @@
 /*
- * Gateway - The gateway service between the Discord API and the discordlist.org nodes.
+ * Shared files of the DLO Project
  *
  * Copyright (C) 2018  Yannick Seeger & Michael Rittmeister
  *
@@ -17,20 +17,19 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-package org.discordlist.cloud.shared.test;
+package org.discordlist.cloud.shared.models.guild;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-public abstract class JsonSerializable {
+public enum PermissionGroup {
+    EVERYONE("eve"),
+    SERVER_HEAD("ser"),
+    DEVELOPER("dev");
 
-    private final ObjectMapper objectMapper;
+    @JsonValue
+    public String key;
 
-    public JsonSerializable() {
-        objectMapper = new ObjectMapper();
-    }
-
-    public String toJson() throws JsonProcessingException {
-        return objectMapper.writeValueAsString(this);
+    PermissionGroup(String key) {
+        this.key = key;
     }
 }
