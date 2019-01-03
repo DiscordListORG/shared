@@ -18,7 +18,7 @@ build:
 pages:
   stage: deploy
   script:
-    - "mvn javadoc:javadoc"
+    - "mvn $MAVEN_CLI_OPTS javadoc:javadoc"
     - "mv target/site/apidoc public/"
   artifacts:
     paths:
