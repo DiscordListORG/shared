@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Shared files of the DLO Project
   ~
-  ~ Copyright (C) 2018  Yannick Seeger & Michael Rittmeister
+  ~ Copyright (C) 2019  Yannick Seeger & Michael Rittmeister
   ~
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as published by
@@ -17,21 +16,14 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program.  If not, see https://www.gnu.org/licenses/.
   -->
-  
-<settings xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd" xmlns="http://maven.apache.org/SETTINGS/1.1.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.1.0 http://maven.apache.org/xsd/settings-1.1.0.xsd">
   <servers>
     <server>
-      <username>${env.MAVEN_REPO_USER}</username>
-      <password>${env.MAVEN_REPO_PASS}</password>
-      <id>central</id>
-    </server>
-    <server>
-      <username>${env.MAVEN_REPO_USER}</username>
-      <password>${env.MAVEN_REPO_PASS}</password>
-      <id>snapshots</id>
+      <id>bintray-discordlist-maven</id>
+      <username>discordlist-ci</username>
+      <password>${env.BINTRAY_KEY}</password>
     </server>
   </servers>
 </settings>
-
-
