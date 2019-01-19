@@ -141,6 +141,32 @@
                 <groupId>org.jetbrains.dokka</groupId>
                 <artifactId>dokka-maven-plugin</artifactId>
                 <version>${dokka.version}</version>
+                <configuration>
+                    <sourceDirectories>
+                        <dir>src/main/java</dir>
+                        <dir>src/main/kotlin</dir>
+                    </sourceDirectories>
+                    <sourceLinks>
+                        <link>
+                            <!-- Source directory -->
+                            <dir>${project.basedir}/src/main/kotlin</dir>
+                            <!-- URL showing where the source code can be accessed through the web browser -->
+                            <url>http://gitlab.discordlist.org/cloud/shared/tree/develop/src/main/kotlin</url>
+                            <!--Suffix which is used to append the line number to the URL. Use #L for GitHub -->
+                            <urlSuffix>#L</urlSuffix>
+                        </link>
+                    </sourceLinks>
+                    <sourceLinks>
+                        <link>
+                            <!-- Source directory -->
+                            <dir>${project.basedir}/src/main/java</dir>
+                            <!-- URL showing where the source code can be accessed through the web browser -->
+                            <url>http://gitlab.discordlist.org/cloud/develop/tree/master/src/main/java</url>
+                            <!--Suffix which is used to append the line number to the URL. Use #L for GitHub -->
+                            <urlSuffix>#L</urlSuffix>
+                        </link>
+                    </sourceLinks>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-javadoc</id>
