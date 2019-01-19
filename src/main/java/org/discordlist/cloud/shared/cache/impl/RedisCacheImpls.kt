@@ -1,5 +1,5 @@
 /*
- * Gateway - The gateway service between the Discord API and the discordlist.org nodes.
+ * Shared files of the DLO Project
  *
  * Copyright (C) 2019  Yannick Seeger & Michael Rittmeister
  *
