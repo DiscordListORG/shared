@@ -19,87 +19,65 @@
 
 package org.discordlist.cloud.shared.io.redis;
 
-import io.vertx.core.Vertx;
-import io.vertx.redis.RedisClient;
-import io.vertx.redis.RedisOptions;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class RedisSource {
 
-    private final Vertx vertx;
     private final String host;
     private final String password;
-    private RedisOptions redisOptions;
-    private RedisClient redisClient;
+    private JedisPool jedis;
 
-    /**
-     * Creates a new {@link RedisSource} instance.
-     * @param vertx the {@link Vertx} instance
-     * @param host the Redis host
-     * @param password the Redis password
-     */
-    public RedisSource(Vertx vertx, String host, String password) {
-        Objects.requireNonNull(vertx);
+    public RedisSource(String host, String password) {
         Objects.requireNonNull(host);
-        this.vertx = vertx;
         this.host = host;
         this.password = password;
     }
 
-    /**
-     * @see RedisSource#RedisSource(Vertx, String, String)
-     * @param vertx the {@link Vertx} instance
-     * @param host the redis host
-     */
-    public RedisSource(Vertx vertx, String host) {
-        this(vertx, host, null);
+    public RedisSource(String host) {
+        this(host, null);
     }
 
-    /**
-     * @see RedisSource#RedisSource(Vertx, String, String)
-     * @param vertx the {@link Vertx} instance
-     */
-    public RedisSource(Vertx vertx) {
-        this(vertx, "localhost");
-    }
-
-    /**
-     * @see RedisSource#RedisSource(Vertx, String, String)
-     */
     public RedisSource() {
-        this(Vertx.vertx());
+        this("localhost");
     }
 
-    /**
-     * Provide custom {@link RedisOptions}.
-     * @param redisOptions the {@link RedisOptions} object
-     * @return this for fluent use
-     */
-    public RedisSource redisOptions(RedisOptions redisOptions) {
-        Objects.requireNonNull(redisOptions);
-        this.redisOptions = redisOptions;
+    public RedisSource connect(Consumer<RedisSource> onSuccess) {
+        JedisPoolConfig config = new JedisPoolConfig();
+        config.setMaxTotal(15);
+        config.setMaxIdle(15);
+        jedis = new JedisPool(host);
+        onSuccess.accept(this);
         return this;
     }
 
     /**
-     * Connects to the Redis server.
-     * @return this for fluent use
+     * Fetches a new {@link Jedis} connection from the {@link JedisPool}.
+     *
+     * @return the {@link Jedis} connection
      */
-    public RedisSource connect() {
-        RedisOptions options = this.redisOptions != null ? new RedisOptions(redisOptions) : new RedisOptions();
+    public Jedis jedis() {
+        Jedis res = jedis.getResource();
         if (password != null)
-            options.setAuth(password);
-        options.setHost(host);
-        redisClient = RedisClient.create(vertx, options);
-        return this;
+            res.auth(password);
+        return res;
     }
 
     /**
-     * Returns the {@link RedisClient} instance.
-     * @return the {@link RedisClient} instance
+     * Get a new Redis instance from pool and authenticates the connection
+     *
+     * @return The Jedis connection
+     * @deprecated Use {@link RedisSource#jedis()} instead
      */
-    public RedisClient client() {
-        return redisClient;
+    @Deprecated
+    public Jedis getJedis() {
+        Jedis resource = jedis.getResource();
+        if (password != null)
+            resource.auth(password);
+        return resource;
     }
 }
