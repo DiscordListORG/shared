@@ -19,60 +19,77 @@
 
 package org.discordlist.cloud.shared.io.rabbitmq;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.Address;
+import io.vertx.core.Vertx;
+import io.vertx.rabbitmq.RabbitMQClient;
+import io.vertx.rabbitmq.RabbitMQOptions;
+import jdk.internal.joptsimple.internal.Strings;
+import org.discordlist.cloud.shared.util.Lists;
 
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
-import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class RabbitMQSource {
 
-    private final String host;
+    private final  List<String> hosts;
     private final String username;
     private final String password;
-    private final boolean isDev;
-    private Connection connection;
-    private Channel channel;
+    private RabbitMQOptions rabbitMQOptions;
+    private RabbitMQClient rabbitMQClient;
 
-    public RabbitMQSource(String host, String username, String password, boolean isDev) {
-        this.host = host;
+    public RabbitMQSource(Vertx vertx, List<String> hosts, String username, String password) {
+        Objects.requireNonNull(vertx);
+        Objects.requireNonNull(hosts);
+        Lists.notEmpty(hosts);
+        this.hosts = hosts;
         this.username = username;
         this.password = password;
-        this.isDev = isDev;
     }
 
-    public RabbitMQSource(String host, String username, String password) {
-        this.host = host;
-        this.username = username;
-        this.password = password;
-        this.isDev = false;
+    public RabbitMQSource(Vertx vertx, List<String> host) {
+        this(vertx, host, null, null);
     }
 
-    public void connect(Consumer<RabbitMQSource> onSuccess) throws IOException, TimeoutException {
-        ConnectionFactory connectionFactory = new ConnectionFactory();
-        connectionFactory.setHost(host);
-        connectionFactory.setUsername(username);
-        connectionFactory.setPassword(password);
-        this.connection = connectionFactory.newConnection();
-        this.channel = connection.createChannel();
-        onSuccess.accept(this);
+    public RabbitMQSource(Vertx vertx) {
+        this(vertx, Collections.singletonList("localhost"));
     }
 
-    public String get(RabbitKey key) {
-        return isDev ? String.format("dev.%s", key.key) : key.key;
+    public RabbitMQSource() {
+        this(Vertx.vertx());
     }
 
-    public boolean isConnected() {
-        return connection.isOpen() && channel.isOpen();
+    /**
+     * Connects to the RabbitMQ server.
+     * @return this for fluent use
+     */
+    public RabbitMQSource connect() {
+        RabbitMQOptions options = rabbitMQOptions != null ? new RabbitMQOptions(rabbitMQOptions) : new RabbitMQOptions();
+        options.setAddresses(Arrays.asList(Address.parseAddresses(String.join(",", hosts.toArray(new String[]{})))));
+        if (username != null)
+            options.setUser(username);
+        if (password != null)
+            options.setPassword(password);
+        return this;
     }
 
-    public Connection getConnection() {
-        return connection;
+    /**
+     * Provide custom {@link RabbitMQOptions}.
+     * @param rabbitMQOptions the {@link RabbitMQOptions} object
+     * @return this for fluent use
+     */
+    public RabbitMQSource rabbitMQOptions(RabbitMQOptions rabbitMQOptions) {
+        Objects.requireNonNull(rabbitMQOptions);
+        this.rabbitMQOptions = rabbitMQOptions;
+        return this;
     }
 
-    public Channel getChannel() {
-        return channel;
+    /**
+     *
+     * @return this for fluent use
+     */
+    public RabbitMQClient client() {
+        return rabbitMQClient;
     }
 }

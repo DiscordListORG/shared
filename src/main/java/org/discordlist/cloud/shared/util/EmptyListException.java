@@ -1,7 +1,7 @@
 /*
  * Shared files of the DLO Project
  *
- * Copyright (C) 2018  Yannick Seeger & Michael Rittmeister
+ * Copyright (C) 2019  Yannick Seeger & Michael Rittmeister
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,27 +17,26 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-package org.discordlist.cloud.shared.io.rabbitmq;
+package org.discordlist.cloud.shared.util;
 
-public enum RabbitKey {
-    QUEUE_DISCORD_EVENT_DISPATCH("discord_event_dispatch"),
-    EXCHANGE_SYSTEM_DISPATCH("system_dispatch");
+public class EmptyListException extends RuntimeException {
 
-    public final String key;
-
-    RabbitKey(String key) {
-        this.key = key;
+    public EmptyListException() {
     }
 
-    public static String get(String instanceName, String key) {
-        return String.format("dlo.%s.%s", instanceName, key);
+    public EmptyListException(String message) {
+        super(message);
     }
 
-    public static String getEventDispatchQueue(String instanceName) {
-        return get(instanceName, QUEUE_DISCORD_EVENT_DISPATCH.key);
+    public EmptyListException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public static String getSystemDispatch(String instanceName) {
-        return get(instanceName, EXCHANGE_SYSTEM_DISPATCH.key);
+    public EmptyListException(Throwable cause) {
+        super(cause);
+    }
+
+    public EmptyListException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

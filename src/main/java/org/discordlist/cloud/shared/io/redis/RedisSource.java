@@ -42,8 +42,6 @@ public class RedisSource {
     public RedisSource(Vertx vertx, String host, String password) {
         Objects.requireNonNull(vertx);
         Objects.requireNonNull(host);
-        Objects.requireNonNull(password);
-
         this.vertx = vertx;
         this.host = host;
         this.password = password;
@@ -76,21 +74,25 @@ public class RedisSource {
     /**
      * Provide custom {@link RedisOptions}.
      * @param redisOptions the {@link RedisOptions} object
+     * @return this for fluent use
      */
-    public void setRedisOptions(RedisOptions redisOptions) {
+    public RedisSource redisOptions(RedisOptions redisOptions) {
         Objects.requireNonNull(redisOptions);
         this.redisOptions = redisOptions;
+        return this;
     }
 
     /**
      * Connects to the Redis server.
+     * @return this for fluent use
      */
-    public void connect() {
+    public RedisSource connect() {
         RedisOptions options = this.redisOptions != null ? new RedisOptions(redisOptions) : new RedisOptions();
         if (password != null)
             options.setAuth(password);
         options.setHost(host);
         redisClient = RedisClient.create(vertx, options);
+        return this;
     }
 
     /**

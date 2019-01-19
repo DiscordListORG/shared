@@ -87,7 +87,7 @@
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-amqp-bridge</artifactId>
+            <artifactId>vertx-rabbitmq-client</artifactId>
             <version>3.6.2</version>
         </dependency>
     </dependencies>
