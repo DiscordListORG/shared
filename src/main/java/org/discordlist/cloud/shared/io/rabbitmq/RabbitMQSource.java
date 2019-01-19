@@ -23,7 +23,6 @@ import com.rabbitmq.client.Address;
 import io.vertx.core.Vertx;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
-import jdk.internal.joptsimple.internal.Strings;
 import org.discordlist.cloud.shared.util.Lists;
 
 import java.util.Arrays;
