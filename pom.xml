@@ -25,7 +25,7 @@
 
     <groupId>org.discordlist.cloud</groupId>
     <artifactId>shared</artifactId>
-    <version>0.1.6.1</version>
+    <version>0.1.6.2</version>
     <packaging>jar</packaging>
     <name>Shared classes of Discordlist projects</name>
 
@@ -95,14 +95,14 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>3.0.1</version>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-redis-client</artifactId>
+            <version>3.5.2.CR3</version>
         </dependency>
         <dependency>
-            <groupId>com.rabbitmq</groupId>
-            <artifactId>amqp-client</artifactId>
-            <version>5.5.0</version>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-rabbitmq-client</artifactId>
+            <version>3.6.2</version>
         </dependency>
         <dependency>
             <groupId>com.mewna</groupId>
