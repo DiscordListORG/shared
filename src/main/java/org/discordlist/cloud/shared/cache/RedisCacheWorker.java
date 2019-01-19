@@ -47,6 +47,7 @@ import org.discordlist.cloud.shared.cache.impl.SnowflakeRedisCache;
 import org.discordlist.cloud.shared.io.redis.RedisSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -75,8 +76,10 @@ public class RedisCacheWorker implements EntityCacheWorker {
     private final GuildSpecificSnowflakeRedisCache<GuildChannel> channelCache;
     private final GuildSpecificRedisCache<String, VoiceState> voiceStateCache;
     private final AtomicReference<User> selfUser = new AtomicReference<>(null);
+    private final RedisSource redisSource;
 
     public RedisCacheWorker(RedisSource redisSource) {
+        this.redisSource = redisSource;
         this.rolesCache = new GuildSpecificSnowflakeRedisCache<>(
                 Role::guildIdAsLong,
                 RedisCache.ROLES,
@@ -152,7 +155,9 @@ public class RedisCacheWorker implements EntityCacheWorker {
         switch (eventType) {
             // Lifecycle
             case Raw.READY:
-                selfUser.set(entityBuilder.createUser(payload.getJsonObject("user")));
+                try (Jedis redis = redisSource.getJedis()) {
+                    redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
+                }
                 break;
             // Channels
             case Raw.CHANNEL_CREATE:
@@ -270,7 +275,13 @@ public class RedisCacheWorker implements EntityCacheWorker {
             }
 
             case Raw.USER_UPDATE:
-                userCache.cache(shardId, entityBuilder.createUser(payload));
+                var user = entityBuilder.createUser(payload);
+                userCache.cache(shardId, user);
+                if (user.equals(selfUser.get()))
+                    selfUser.set(user);
+                    try (Jedis redis = redisSource.getJedis()) {
+                        redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
+                    }
                 break;
 
         }

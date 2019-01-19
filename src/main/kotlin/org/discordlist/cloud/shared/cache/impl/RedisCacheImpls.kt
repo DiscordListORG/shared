@@ -304,7 +304,7 @@ open class GuildSpecificRedisCacheImpl<K, V : Entity>(
     }
 
     override fun cache(shardId: Int, entity: V) {
-        cache(shardId, entity)
+        cache(identifyGuild(entity), shardId, entity)
     }
 
     override fun bulkCache(shardId: Int, entities: Collection<V>) {
