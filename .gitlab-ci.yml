@@ -23,8 +23,8 @@ build:
 pages:
   stage: pages
   script:
-    - "mvn $MAVEN_CLI_OPTS javadoc:javadoc"
-    - "mv ./target/site/apidocs public/"
+    - "mvn $MAVEN_CLI_OPTS dokka:dokka"
+    - "mv ./target/dokka public/"
   artifacts:
     paths:
       - "public"
