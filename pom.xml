@@ -182,7 +182,7 @@
                             <url>https://mewna.github.io/catnip/</url>
                         </link>
                         <link>
-                            <url>https://www.javadoc.io/doc/redis.clients/jedis/3.0.1/</url>
+                            <url>http://xetorthio.github.io/jedis/</url>
                         </link>
                     </externalDocumentationLinks>
                 </configuration>
