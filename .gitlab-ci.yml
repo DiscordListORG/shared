@@ -25,6 +25,7 @@ pages:
   script:
     - "mvn $MAVEN_CLI_OPTS dokka:dokka"
     - "mv ./target/dokka public/"
+    - "wget https://gitlab.discordlist.org/cloud/shared/snippets/1/raw -O public/index.html"
   artifacts:
     paths:
       - "public"
