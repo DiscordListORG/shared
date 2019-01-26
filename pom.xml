@@ -120,6 +120,11 @@
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>3.0.1</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -159,11 +164,19 @@
                             <!-- Source directory -->
                             <dir>${project.basedir}/src/main/java</dir>
                             <!-- URL showing where the source code can be accessed through the web browser -->
-                            <url>http://gitlab.discordlist.org/cloud/develop/tree/master/src/main/java</url>
+                            <url>http://gitlab.discordlist.org/cloud/shared/tree/develop/src/main/java</url>
                             <!--Suffix which is used to append the line number to the URL. Use #L for GitHub -->
                             <urlSuffix>#L</urlSuffix>
                         </link>
                     </sourceLinks>
+                    <externalDocumentationLinks>
+                        <link>
+                            <url>https://mewna.github.com/catnip</url>
+                        </link>
+                        <link>
+                            <url>https://www.javadoc.io/doc/redis.clients/jedis/3.0.1</url>
+                        </link>
+                    </externalDocumentationLinks>
                 </configuration>
                 <executions>
                     <execution>
