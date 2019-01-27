@@ -67,7 +67,7 @@ open class RedisCacheImpl<K, V : Entity>(
         val threadPool = Executors.newCachedThreadPool()!!
     }
 
-    protected var memoryCache: LoadingCache<K, V>
+    public var memoryCache: LoadingCache<K, V>
     protected val executor = Executors.newCachedThreadPool()
 
     init {
