@@ -20,6 +20,8 @@
 package org.discordlist.cloud.shared.io.rabbitmq;
 
 import com.rabbitmq.client.Address;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.rabbitmq.RabbitMQClient;
 import io.vertx.rabbitmq.RabbitMQOptions;
@@ -64,7 +66,7 @@ public class RabbitMQSource {
     /**
      * Connects to the RabbitMQ server.
      */
-    public RabbitMQClient connect() {
+    public RabbitMQClient connect(Handler<AsyncResult<Void>> resultHandler) {
         RabbitMQOptions options = rabbitMQOptions != null ? new RabbitMQOptions(rabbitMQOptions) : new RabbitMQOptions();
         options.setAddresses(Arrays.asList(Address.parseAddresses(String.join(",", hosts.toArray(new String[]{})))));
         if (username != null)
@@ -72,6 +74,7 @@ public class RabbitMQSource {
         if (password != null)
             options.setPassword(password);
         this.rabbitMQClient = RabbitMQClient.create(vertx, options);
+        this.rabbitMQClient.start(resultHandler);
         return rabbitMQClient;
     }
 
