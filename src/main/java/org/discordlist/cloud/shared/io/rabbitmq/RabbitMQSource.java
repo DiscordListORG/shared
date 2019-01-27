@@ -32,6 +32,7 @@ import java.util.Objects;
 
 public class RabbitMQSource {
 
+    private final Vertx vertx;
     private final  List<String> hosts;
     private final String username;
     private final String password;
@@ -42,6 +43,7 @@ public class RabbitMQSource {
         Objects.requireNonNull(vertx);
         Objects.requireNonNull(hosts);
         Lists.notEmpty(hosts);
+        this.vertx = vertx;
         this.hosts = hosts;
         this.username = username;
         this.password = password;
@@ -61,16 +63,16 @@ public class RabbitMQSource {
 
     /**
      * Connects to the RabbitMQ server.
-     * @return this for fluent use
      */
-    public RabbitMQSource connect() {
+    public RabbitMQClient connect() {
         RabbitMQOptions options = rabbitMQOptions != null ? new RabbitMQOptions(rabbitMQOptions) : new RabbitMQOptions();
         options.setAddresses(Arrays.asList(Address.parseAddresses(String.join(",", hosts.toArray(new String[]{})))));
         if (username != null)
             options.setUser(username);
         if (password != null)
             options.setPassword(password);
-        return this;
+        this.rabbitMQClient = RabbitMQClient.create(vertx, options);
+        return rabbitMQClient;
     }
 
     /**
