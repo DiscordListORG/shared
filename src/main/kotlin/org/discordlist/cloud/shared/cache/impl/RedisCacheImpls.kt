@@ -67,18 +67,7 @@ open class RedisCacheImpl<K, V : Entity>(
         val threadPool = Executors.newCachedThreadPool()!!
     }
 
-    public var memoryCache: LoadingCache<K, V>
     protected val executor = Executors.newCachedThreadPool()
-
-    init {
-        memoryCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS)
-                .build<K, V>(CacheLoader.asyncReloading(object : CacheLoader<K, V>() {
-                    override fun load(key: K): V {
-                        return getFromRedis(key)
-                    }
-                }, threadPool))
-    }
 
     constructor(identify: (entity: V) -> K,
                 stringify: (identifier: K) -> String,
@@ -152,7 +141,7 @@ open class RedisCacheImpl<K, V : Entity>(
 
     override fun getAsync(entityId: K): CompletableFuture<V> {
         return CompletableFuture.supplyAsync(Supplier {
-            memoryCache[entityId]
+            getFromRedis(entityId)
         }, executor)
     }
 
@@ -172,7 +161,6 @@ open class RedisCacheImpl<K, V : Entity>(
 
     override fun invalidate(shardId: Int): CompletableFuture<*> {
         return CompletableFuture.supplyAsync(Supplier {
-            memoryCache.invalidateAll()
             pool.jedis().use {
                 it.del(formatHashIdentifier(shardId))
             }
@@ -238,17 +226,6 @@ open class GuildSpecificRedisCacheImpl<K, V : Entity>(
         serializer: (entity: V) -> ByteArray
 ) : RedisCacheImpl<GuildSpecificRedisCache.GuildInformationContainer<K>, V>(identify, stringify, cacheType, clazz, pool, builder, serializer), GuildSpecificRedisCache<K, V> {
 
-    init {
-        memoryCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS)
-                .build<GuildSpecificRedisCache.GuildInformationContainer<K>, V>(CacheLoader.asyncReloading(object : CacheLoader<GuildSpecificRedisCache.GuildInformationContainer<K>, V>() {
-                    override fun load(key: GuildSpecificRedisCache.GuildInformationContainer<K>): V {
-                        return getFromRedis(key)
-                    }
-
-                }, threadPool))
-    }
-
     constructor(identify: (entity: V) -> GuildSpecificRedisCache.GuildInformationContainer<K>,
                 stringify: (identifier: GuildSpecificRedisCache.GuildInformationContainer<K>) -> String,
                 cacheType: String,
@@ -262,6 +239,7 @@ open class GuildSpecificRedisCacheImpl<K, V : Entity>(
         log.debug("[Cached] Successfully cached $entity with ID ${stringifyKey(identifier.entityIdentifier)} on guild ${identifier.guildId}")
         this.hset(formatHashIdentifier(shardId, guildId), stringifyKey(identifier.entityIdentifier).toByteArray(), entity.toByteArray())
     }
+
 
     override fun cache(guildId: Long, shardId: Int, entity: V): CompletableFuture<*> {
         return CompletableFuture.supplyAsync(Supplier {
@@ -314,7 +292,6 @@ open class GuildSpecificRedisCacheImpl<K, V : Entity>(
 
     override fun invalidate(shardId: Int): CompletableFuture<*> {
         return CompletableFuture.supplyAsync(Supplier {
-            memoryCache.invalidateAll()
             pool.jedis().use { jedis ->
                 jedis.keys("$shardId-*-$cacheType").forEach {
                     jedis.del(it)
@@ -336,7 +313,7 @@ open class GuildSpecificRedisCacheImpl<K, V : Entity>(
     }
 
     override fun get(entityId: GuildSpecificRedisCache.GuildInformationContainer<K>): V {
-        return memoryCache.get(entityId)
+        return getFromRedis(entityId)
     }
 
     override fun cache(shardId: Int, entity: V): CompletableFuture<*> {
