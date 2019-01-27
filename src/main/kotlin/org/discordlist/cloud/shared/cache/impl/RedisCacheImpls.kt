@@ -33,8 +33,10 @@ import org.discordlist.cloud.shared.cache.RedisCache
 import org.discordlist.cloud.shared.io.redis.RedisSource
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
 
 /**
  * Default implementation of [RedisCache]
@@ -66,11 +68,12 @@ open class RedisCacheImpl<K, V : Entity>(
     }
 
     protected var memoryCache: LoadingCache<K, V>
+    protected val executor = Executors.newCachedThreadPool()
 
     init {
         memoryCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
-                .build<K, V>(CacheLoader.asyncReloading(object: CacheLoader<K, V>() {
+                .build<K, V>(CacheLoader.asyncReloading(object : CacheLoader<K, V>() {
                     override fun load(key: K): V {
                         return getFromRedis(key)
                     }
@@ -83,7 +86,7 @@ open class RedisCacheImpl<K, V : Entity>(
                 clazz: Class<V>,
                 pool: RedisSource) : this(identify, stringify, cacheType, clazz, pool, { json, cache -> cache.decodeEntity(json.encode().toByteArray()) }, { it.toJson().encode().toByteArray() })
 
-    var catnip: Catnip? = null
+    private var catnip: Catnip? = null
     protected val log = LoggerFactory.getLogger(RedisCacheImpl::class.java)!!
 
     fun V.toByteArray(): ByteArray {
@@ -108,29 +111,35 @@ open class RedisCacheImpl<K, V : Entity>(
 
     }
 
-    override fun cache(shardId: Int, key: K, entity: V) {
-        pool.jedis.use {
-            it.cacheEntity(shardId, entity)
-        }
-    }
-
-    override fun delete(shardId: Int, entityId: K) {
-        pool.jedis.use {
-            it.hdel(formatHashIdentifier(shardId), stringify(entityId).toByteArray())
-        }
-    }
-
-
-    override fun bulkCache(shardId: Int, entities: Collection<V>) {
-        pool.jedis.use { connection ->
-            entities.forEach {
-                connection.cacheEntity(shardId, it)
+    override fun cache(shardId: Int, key: K, entity: V): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            pool.jedis().use {
+                it.cacheEntity(shardId, entity)
             }
-        }
+        }, executor)
+    }
+
+    override fun delete(shardId: Int, entityId: K): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            pool.jedis().use {
+                it.hdel(formatHashIdentifier(shardId), stringify(entityId).toByteArray())
+            }
+        }, executor)
+    }
+
+
+    override fun bulkCache(shardId: Int, entities: Collection<V>): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            pool.jedis().use { connection ->
+                entities.forEach {
+                    connection.cacheEntity(shardId, it)
+                }
+            }
+        }, executor)
     }
 
     private fun getFromRedis(entityId: K): V {
-        pool.jedis.use { connection ->
+        pool.jedis().use { connection ->
             connection.keys("*-$cacheType").forEach { key ->
                 val result = connection.hget(key.toByteArray(), stringify(entityId).toByteArray())
                 if (result != null)
@@ -141,27 +150,33 @@ open class RedisCacheImpl<K, V : Entity>(
         return entityFromByteArray(null)
     }
 
-    override fun get(entityId: K): V {
-        return memoryCache[entityId]
+    override fun getAsync(entityId: K): CompletableFuture<V> {
+        return CompletableFuture.supplyAsync(Supplier {
+            memoryCache[entityId]
+        }, executor)
     }
 
-    override fun getAll(): Collection<V> {
-        val list = mutableListOf<V>()
-        pool.jedis.use { connection ->
-            connection.keys("*-$cacheType").forEach { key ->
-                connection.hgetAll(key.toByteArray()).forEach {
-                    list.add(entityFromByteArray(it.value))
+    override fun getAllAsync(): CompletableFuture<Collection<V>> {
+        return CompletableFuture.supplyAsync(Supplier {
+            val list = mutableListOf<V>()
+            pool.jedis().use { connection ->
+                connection.keys("*-$cacheType").forEach { key ->
+                    connection.hgetAll(key.toByteArray()).forEach {
+                        list.add(entityFromByteArray(it.value))
+                    }
                 }
             }
-        }
-        return list
+            list as Collection<V>
+        }, executor)
     }
 
-    override fun invalidate(shardId: Int) {
-        memoryCache.invalidateAll()
-        pool.jedis.use {
-            it.del(formatHashIdentifier(shardId))
-        }
+    override fun invalidate(shardId: Int): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            memoryCache.invalidateAll()
+            pool.jedis().use {
+                it.del(formatHashIdentifier(shardId))
+            }
+        }, executor)
     }
 
     override fun catnip(catnip: Catnip) {
@@ -190,7 +205,7 @@ open class RedisCacheImpl<K, V : Entity>(
 class SnowflakeRedisCache<T : Snowflake>(cacheType: String, clazz: Class<T>, pool: RedisSource,
                                          builder: (json: JsonObject, cache: RedisCacheImpl<Long, T>) -> T,
                                          serializer: (entity: T) -> ByteArray
-) : RedisCacheImpl<Long, T>({ it -> it.idAsLong() }, { it.toString() }, cacheType, clazz, pool, builder, serializer) {
+) : RedisCacheImpl<Long, T>({ it.idAsLong() }, { it.toString() }, cacheType, clazz, pool, builder, serializer) {
     constructor(cacheType: String, clazz: Class<T>, pool: RedisSource) : this(cacheType, clazz, pool, { json, cache -> cache.decodeEntity(json.encode().toByteArray()) }, { it.toJson().encode().toByteArray() })
 }
 
@@ -226,7 +241,7 @@ open class GuildSpecificRedisCacheImpl<K, V : Entity>(
     init {
         memoryCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(1, TimeUnit.HOURS)
-                .build<GuildSpecificRedisCache.GuildInformationContainer<K>, V>(CacheLoader.asyncReloading(object: CacheLoader<GuildSpecificRedisCache.GuildInformationContainer<K>, V>() {
+                .build<GuildSpecificRedisCache.GuildInformationContainer<K>, V>(CacheLoader.asyncReloading(object : CacheLoader<GuildSpecificRedisCache.GuildInformationContainer<K>, V>() {
                     override fun load(key: GuildSpecificRedisCache.GuildInformationContainer<K>): V {
                         return getFromRedis(key)
                     }
@@ -248,46 +263,68 @@ open class GuildSpecificRedisCacheImpl<K, V : Entity>(
         this.hset(formatHashIdentifier(shardId, guildId), stringifyKey(identifier.entityIdentifier).toByteArray(), entity.toByteArray())
     }
 
-    override fun cache(guildId: Long, shardId: Int, entity: V) {
-        pool.jedis.use {
-            it.cacheEntity(shardId, guildId, entity)
-        }
-    }
-
-    override fun bulkCache(guildId: Long, shardId: Int, entities: Collection<V>) {
-        pool.jedis.use { connection ->
-            entities.forEach {
-                connection.cacheEntity(shardId, guildId, it)
+    override fun cache(guildId: Long, shardId: Int, entity: V): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            pool.jedis().use {
+                it.cacheEntity(shardId, guildId, entity)
             }
-        }
+        }, executor)
     }
 
-    override fun delete(shardId: Int, guildId: Long, entityId: K) {
-        pool.jedis.use {
-            it.hdel(formatHashIdentifier(shardId, guildId), stringifyKey(entityId).toByteArray())
-        }
-    }
-
-    override fun delete(shardId: Int, guildId: Long) {
-        pool.jedis.use {
-            it.del("-$guildId-$cacheType")
-        }
-    }
-
-    override fun getAll(guildId: Long): Collection<V> {
-        val list = mutableListOf<V>()
-        pool.jedis.use { connection ->
-            connection.keys("*-$guildId-$cacheType".toByteArray()).forEach { key ->
-                connection.hgetAll(key).forEach {
-                    list.add(entityFromByteArray(it.value))
+    override fun bulkCache(guildId: Long, shardId: Int, entities: Collection<V>): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            pool.jedis().use { connection ->
+                entities.forEach {
+                    connection.cacheEntity(shardId, guildId, it)
                 }
             }
-        }
-        return list
+        }, executor)
+    }
+
+    override fun delete(shardId: Int, guildId: Long, entityId: K): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            pool.jedis().use {
+                it.hdel(formatHashIdentifier(shardId, guildId), stringifyKey(entityId).toByteArray())
+            }
+        }, executor)
+    }
+
+    override fun delete(shardId: Int, guildId: Long): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            pool.jedis().use {
+                it.del("-$guildId-$cacheType")
+            }
+        }, executor)
+    }
+
+    override fun getAllAsync(guildId: Long): CompletableFuture<Collection<V>> {
+        return CompletableFuture.supplyAsync(Supplier {
+            val list = mutableListOf<V>()
+            pool.jedis().use { connection ->
+                connection.keys("*-$guildId-$cacheType".toByteArray()).forEach { key ->
+                    connection.hgetAll(key).forEach {
+                        list.add(entityFromByteArray(it.value))
+                    }
+                }
+            }
+            list as Collection<V>
+        }, executor)
+
+    }
+
+    override fun invalidate(shardId: Int): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            memoryCache.invalidateAll()
+            pool.jedis().use { jedis ->
+                jedis.keys("$shardId-*-$cacheType").forEach {
+                    jedis.del(it)
+                }
+            }
+        }, executor)
     }
 
     private fun getFromRedis(entityId: GuildSpecificRedisCache.GuildInformationContainer<K>): V {
-        pool.jedis.use { connection ->
+        pool.jedis().use { connection ->
             connection.keys("*-${entityId.guildId}-$cacheType").forEach { key ->
                 val result = connection.hget(key.toByteArray(), stringifyKey(entityId.entityIdentifier).toByteArray())
                 if (result != null)
@@ -299,17 +336,20 @@ open class GuildSpecificRedisCacheImpl<K, V : Entity>(
     }
 
     override fun get(entityId: GuildSpecificRedisCache.GuildInformationContainer<K>): V {
-        //TODO("In memory  cache")
-        return getFromRedis(entityId)
+        return memoryCache.get(entityId)
     }
 
-    override fun cache(shardId: Int, entity: V) {
-        cache(identifyGuild(entity), shardId, entity)
+    override fun cache(shardId: Int, entity: V): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            cache(identifyGuild(entity), shardId, entity)
+        }, executor)
     }
 
-    override fun bulkCache(shardId: Int, entities: Collection<V>) {
-        if (!entities.isEmpty())
-            bulkCache(identifyGuild(entities.first()), shardId, entities)
+    override fun bulkCache(shardId: Int, entities: Collection<V>): CompletableFuture<*> {
+        return CompletableFuture.supplyAsync(Supplier {
+            if (!entities.isEmpty())
+                bulkCache(identifyGuild(entities.first()), shardId, entities)
+        }, executor)
     }
 
 }

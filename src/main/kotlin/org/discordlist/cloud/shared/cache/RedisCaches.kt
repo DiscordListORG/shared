@@ -25,6 +25,8 @@ import com.mewna.catnip.cache.view.DefaultNamedCacheView
 import com.mewna.catnip.cache.view.NamedCacheView
 import com.mewna.catnip.entity.Entity
 import com.mewna.catnip.entity.RequiresCatnip
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Future
 
 /**
  * Generic Redis cache for all type of [Entity]
@@ -80,15 +82,15 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
      * @param key the key of the entity
      * @param entity the entity itself
      */
-    fun cache(shardId: Int, key: K, entity: V)
+    fun cache(shardId: Int, key: K, entity: V): CompletableFuture<*>
 
     /**
      * Method that caches an entity by using the [identify] method
      * @param shardId The id of the shard the entity is on
      * @param entity The entity itself
      */
-    fun cache(shardId: Int, entity: V) {
-        cache(shardId, identify(entity), entity)
+    fun cache(shardId: Int, entity: V): CompletableFuture<*> {
+        return cache(shardId, identify(entity), entity)
     }
 
     /**
@@ -115,7 +117,7 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
      * @param shardId The id of the shard the entity is on
      * @param entities The entities itself
      */
-    fun bulkCache(shardId: Int, entities: Collection<V>)
+    fun bulkCache(shardId: Int, entities: Collection<V>): CompletableFuture<*>
 
     /**
      * Method that caches an entity
@@ -131,20 +133,28 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
      * @param entityId The entities id
      * @return The entity
      */
-    fun get(entityId: K): V
+    fun get(entityId: K): V {
+        return getAsync(entityId).get()
+    }
+
+    fun getAsync(entityId: K): CompletableFuture<V>
 
     /**
      * Method that deletes an entity from cache
      * @param shardId the shard the entity is on
      * @param entityId the id of the entity
      */
-    fun delete(shardId: Int, entityId: K)
+    fun delete(shardId: Int, entityId: K): CompletableFuture<*>
 
     /**
      * Returns the whole cache
      * @return all cached entities in a [List]
      */
-    fun getAll(): Collection<V>
+    fun getAll(): Collection<V> {
+        return getAllAsync().get()
+    }
+
+    fun getAllAsync(): CompletableFuture<Collection<V>>
 
     /**
      * Returns the whole cache
@@ -153,7 +163,15 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
      * @return all cached entities in a [CacheView]
      */
     fun asCacheView(): CacheView<V> {
-        return getAll().asCacheView()
+        return asCacheViewAsync().get()
+    }
+
+    fun asCacheViewAsync(): Future<CacheView<V>> {
+        return getAllAsync().thenApplyAsync { it.asCacheView() }
+    }
+
+    fun asNamedCacheViewAsync(nameFunction: (entity: V) -> String): Future<NamedCacheView<V>> {
+        return getAllAsync().thenApplyAsync { it.asNamedCacheView(nameFunction) }
     }
 
     /**
@@ -164,7 +182,7 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
      * @return all cached entities in a [NamedCacheView]
      */
     fun asNamedCacheView(nameFunction: (entity: V) -> String): NamedCacheView<V> {
-        return getAll().asNamedCacheView(nameFunction)
+        return asNamedCacheViewAsync(nameFunction).get()
     }
 
     /**
@@ -196,7 +214,7 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
     /**
      * Invalidates all entities of one shard
      */
-    fun invalidate(shardId: Int)
+    fun invalidate(shardId: Int): CompletableFuture<*>
 
     /**
      * Method that is invoked when the entity got updated at Discord
@@ -204,8 +222,8 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
      * @param identifier the iddentifier of the entity
      * @param entity the entity
      */
-    fun update(shardId: Int, identifier: K, entity: V) {
-        cache(shardId, identifier, entity)
+    fun update(shardId: Int, identifier: K, entity: V): CompletableFuture<*> {
+        return cache(shardId, identifier, entity)
     }
 
 }
@@ -245,7 +263,7 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
      * @param shardId the id of the Shard the entity is on
      * @param entity the entity itself
      */
-    fun cache(guildId: Long, shardId: Int, entity: V)
+    fun cache(guildId: Long, shardId: Int, entity: V): CompletableFuture<*>
 
     /**
      * Method that uses [identifyGuild] to invoke [cache]
@@ -253,8 +271,8 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
      * @param entity the entity itself
      * @see GuildSpecificRedisCache.cache
      */
-    override fun cache(shardId: Int, entity: V) {
-        cache(identifyGuild(entity), shardId, entity)
+    override fun cache(shardId: Int, entity: V): CompletableFuture<*> {
+        return cache(identifyGuild(entity), shardId, entity)
     }
 
     /**
@@ -263,7 +281,7 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
      * @param shardId the id of the Shard the entity is on
      * @param entities the [Collection] of entities
      */
-    fun bulkCache(guildId: Long, shardId: Int, entities: Collection<V>)
+    fun bulkCache(guildId: Long, shardId: Int, entities: Collection<V>): CompletableFuture<*>
 
     /**
      * Method that uses [identifyGuild] to invoke [bulkCache]
@@ -271,9 +289,10 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
      * @param entities the [Collection] of entities
      * @see GuildSpecificRedisCache.cache
      */
-    override fun bulkCache(shardId: Int, entities: Collection<V>) {
+    override fun bulkCache(shardId: Int, entities: Collection<V>): CompletableFuture<*> {
         if (!entities.isEmpty())
-            bulkCache(identifyGuild(entities.first()), shardId, entities)
+            return bulkCache(identifyGuild(entities.first()), shardId, entities)
+        return CompletableFuture.completedFuture(null)
     }
 
     /**
@@ -282,8 +301,12 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
      * @param entityId the id of the entity
      * @return the entity
      */
+    fun getAsync(guildId: Long, entityId: K): CompletableFuture<V> {
+        return getAsync(GuildInformationContainer(guildId, entityId))
+    }
+
     fun get(guildId: Long, entityId: K): V {
-        return get(GuildInformationContainer(guildId, entityId))
+        return getAsync(GuildInformationContainer(guildId, entityId)).get()
     }
 
     /**
@@ -292,14 +315,14 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
      * @param guildId the id of the guild the entity is on
      * @param entityId the id of the entity
      */
-    fun delete(shardId: Int, guildId: Long, entityId: K)
+    fun delete(shardId: Int, guildId: Long, entityId: K): CompletableFuture<*>
 
     /**
      * Method that deletes all entities of a guild from cache
      * @param shardId the id of the shard the entity is on
      * @param guildId the id of the guild the entity is on
      */
-    fun delete(shardId: Int, guildId: Long)
+    fun delete(shardId: Int, guildId: Long): CompletableFuture<*>
 
     /**
      * Equivalent of [RedisCache.getAll] for just getting entities of the specified guild
@@ -307,7 +330,11 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
      * @see RedisCache.getAll
      * @return all cached entities in a [Collection]
      */
-    fun getAll(guildId: Long): Collection<V>
+    fun getAll(guildId: Long): Collection<V> {
+        return getAllAsync(guildId).get()
+    }
+
+    fun getAllAsync(guildId: Long): CompletableFuture<Collection<V>>
 
     /**
      * Equivalent of [RedisCache.asCacheView] for just getting entities of the specified guild
@@ -317,6 +344,10 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
      */
     fun asCacheView(guildId: Long): CacheView<V> {
         return getAll(guildId).asCacheView()
+    }
+
+    fun asCacheViewAsync(guildId: Long): Future<CacheView<V>> {
+        return getAllAsync(guildId).thenApplyAsync { it.asCacheView() }
     }
 
     /**
@@ -329,11 +360,15 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
         return getAll(guildId).asNamedCacheView(nameFunction)
     }
 
+    fun asNamedCacheViewAsync(guildId: Long, nameFunction: (entity: V) -> String): Future<NamedCacheView<V>> {
+        return getAllAsync(guildId).thenApplyAsync { it.asNamedCacheView(nameFunction) }
+    }
+
     override fun formatHashIdentifier(shardId: Int): ByteArray {
         throw UnsupportedOperationException("That operation is not supported by guild specific caches")
     }
 
-    override fun update(shardId: Int, identifier: GuildInformationContainer<K>, entity: V) {
+    override fun update(shardId: Int, identifier: GuildInformationContainer<K>, entity: V): CompletableFuture<Void> {
         throw UnsupportedOperationException("That operation is not supported by guild specific caches")
     }
 

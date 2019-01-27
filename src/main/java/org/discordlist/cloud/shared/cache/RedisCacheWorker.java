@@ -57,6 +57,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * RedisCache implementation of {@link com.mewna.catnip.cache.EntityCacheWorker} may contains some code of {@link com.mewna.catnip.cache.MemoryEntityCache}
@@ -151,11 +152,11 @@ public class RedisCacheWorker implements EntityCacheWorker {
 
     @Nonnull
     @Override
-    public Future<Void> updateCache(@Nonnull String eventType, int shardId, @Nonnull JsonObject payload) {
+    public Future<java.lang.Void> updateCache(@Nonnull String eventType, int shardId, @Nonnull JsonObject payload) {
         switch (eventType) {
             // Lifecycle
             case Raw.READY:
-                try (Jedis redis = redisSource.getJedis()) {
+                try (Jedis redis = redisSource.jedis()) {
                     redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
                 }
                 break;
@@ -164,9 +165,9 @@ public class RedisCacheWorker implements EntityCacheWorker {
             case Raw.CHANNEL_UPDATE: {
                 final var channel = entityBuilder.createChannel(payload);
                 if (channel.isGuild())
-                    channelCache.cache(shardId, ((GuildChannel) channel));
+                    return future(channelCache.cache(shardId, ((GuildChannel) channel)));
                 else if (channel.isUserDM())
-                    dmChannelCache.cache(shardId, ((UserDMChannel) channel));
+                    return future(dmChannelCache.cache(shardId, ((UserDMChannel) channel)));
                 else
                     log.warn("I don't know how to cache channel {}: isCategory={}, isDM={}, isGroupDM={}," +
                                     "isGuild={}, isText={}, isUserDM={}, isVoice={}",
@@ -177,9 +178,9 @@ public class RedisCacheWorker implements EntityCacheWorker {
             case Raw.CHANNEL_DELETE: {
                 final var channel = entityBuilder.createChannel(payload);
                 if (channel.isGuild())
-                    channelCache.delete(shardId, channel.asGuildChannel().guildIdAsLong(), channel.idAsLong());
+                    return future(channelCache.delete(shardId, channel.asGuildChannel().guildIdAsLong(), channel.idAsLong()));
                 else if (channel.isUserDM())
-                    dmChannelCache.delete(shardId, channel.idAsLong());
+                    return future(dmChannelCache.delete(shardId, channel.idAsLong()));
                 else
                     log.warn("I don't know how to delete non-guild channel {}!", channel.idAsLong());
 
@@ -199,27 +200,25 @@ public class RedisCacheWorker implements EntityCacheWorker {
             }
             case Raw.GUILD_DELETE: {
                 final long guildId = Long.parseUnsignedLong(payload.getString("id"));
-                guildCache.delete(shardId, guildId);
-                memberCache.delete(shardId, guildId);
-                rolesCache.delete(shardId, guildId);
-                channelCache.delete(shardId, guildId);
-                emojiCache.delete(shardId, guildId);
-                voiceStateCache.delete(shardId, guildId);
-                break;
+                return future(guildCache.delete(shardId, guildId),
+                        memberCache.delete(shardId, guildId),
+                        rolesCache.delete(shardId, guildId),
+                        channelCache.delete(shardId, guildId),
+                        emojiCache.delete(shardId, guildId),
+                        voiceStateCache.delete(shardId, guildId)
+                );
             }
             case Raw.GUILD_ROLE_UPDATE:
             case Raw.GUILD_ROLE_CREATE: {
                 final String guild = payload.getString("guild_id");
                 final JsonObject json = payload.getJsonObject("role");
                 final Role role = entityBuilder.createRole(guild, json);
-                rolesCache.cache(shardId, role);
-                break;
+                return future(rolesCache.cache(shardId, role));
             }
             case Raw.GUILD_ROLE_DELETE: {
                 final long guild = payload.getLong("guild_id");
                 final long role = payload.getLong("role_id");
-                rolesCache.delete(shardId, guild, role);
-                break;
+                return future(rolesCache.delete(shardId, guild, role));
             }
             case Raw.GUILD_MEMBER_UPDATE: {
                 // This doesn't send an object like all the other events, so we build a fake
@@ -239,7 +238,7 @@ public class RedisCacheWorker implements EntityCacheWorker {
                                     // If we have an old member cached, this shouldn't be an issue
                                     .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
                     final Member member = entityBuilder.createMember(guild, data);
-                    memberCache.cache(Long.parseLong(guild), shardId, member);
+                    return future(memberCache.cache(Long.parseLong(guild), shardId, member));
                 } else {
                     log.warn("Got GUILD_MEMBER_UPDATE for {} in {}, but we don't have them cached?!", id, guild);
                 }
@@ -248,41 +247,38 @@ public class RedisCacheWorker implements EntityCacheWorker {
             case Raw.GUILD_MEMBER_REMOVE: {
                 final var guild = payload.getLong("guild_id");
                 final var user = payload.getJsonObject("user").getLong("id");
-                memberCache.delete(shardId, guild, user);
-                break;
+                return future(memberCache.delete(shardId, guild, user));
             }
             case Raw.GUILD_MEMBERS_CHUNK: {
                 final long guild = payload.getLong("guild_id");
                 final JsonArray members = payload.getJsonArray("members");
-                members.stream().map(e -> entityBuilder.createMember(String.valueOf(guild), (JsonObject) e)).forEach(member -> memberCache.cache(guild, shardId, member));
-                break;
+                return future(members.stream().map(e -> memberCache.cache(guild, shardId, entityBuilder.createMember(String.valueOf(guild), (JsonObject) e))).collect(Collectors.toList()).toArray(CompletableFuture[]::new));
             }
 
             case Raw.GUILD_EMOJIS_UPDATE: {
                 if (!catnip.cacheFlags().contains(CacheFlag.DROP_EMOJI)) {
-                    final long guild = payload.getLong("guild_id");
+                    final Long guild = payload.getLong("guild_id");
                     final JsonArray emojis = payload.getJsonArray("emojis");
-                    emojis.stream().map(e -> entityBuilder.createCustomEmoji(String.valueOf(guild), (JsonObject) e)).forEach(emoji -> emojiCache.cache(guild, shardId, emoji));
+                    return future(emojis.stream().map(e -> emojiCache.cache(guild, shardId, entityBuilder.createCustomEmoji(String.valueOf(guild), (JsonObject) e))).collect(Collectors.toList()).toArray(CompletableFuture[]::new));
                 }
                 break;
             }
             case Raw.VOICE_STATE_UPDATE: {
                 if (!catnip.cacheFlags().contains(CacheFlag.DROP_VOICE_STATES)) {
                     final VoiceState state = entityBuilder.createVoiceState(payload);
-                    voiceStateCache.cache(state.guildIdAsLong(), shardId, state);
+                    return future(voiceStateCache.cache(state.guildIdAsLong(), shardId, state));
                 }
                 break;
             }
 
             case Raw.USER_UPDATE:
                 var user = entityBuilder.createUser(payload);
-                userCache.cache(shardId, user);
                 if (user.equals(selfUser.get()))
                     selfUser.set(user);
-                    try (Jedis redis = redisSource.getJedis()) {
-                        redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
-                    }
-                break;
+                try (Jedis redis = redisSource.jedis()) {
+                    redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
+                }
+                return future(userCache.cache(shardId, user));
 
         }
         return Future.succeededFuture();
@@ -349,16 +345,10 @@ public class RedisCacheWorker implements EntityCacheWorker {
         return this;
     }
 
-    @Nullable
-    @Override
-    public Guild guild(long id) {
-        return guildCache.get(id);
-    }
-
     @Nonnull
     @Override
     public CompletableFuture<Guild> guildAsync(long l) {
-        return SafeVertxCompletableFuture.completedFuture(guild(l));
+        return guildCache.getAsync(l);
     }
 
     @Nonnull
@@ -367,16 +357,10 @@ public class RedisCacheWorker implements EntityCacheWorker {
         return guildCache.asNamedCacheView(Guild::name);
     }
 
-    @Nullable
-    @Override
-    public User user(long id) {
-        return userCache.get(id);
-    }
-
     @Nonnull
     @Override
     public CompletableFuture<User> userAsync(long l) {
-        return SafeVertxCompletableFuture.completedFuture(user(l));
+        return userCache.getAsync(l);
     }
 
     @Nonnull
@@ -403,40 +387,28 @@ public class RedisCacheWorker implements EntityCacheWorker {
         return new DefaultCacheView<>();
     }
 
-    @Nullable
-    @Override
-    public Member member(long guildId, long id) {
-        return memberCache.get(guildId, id);
-    }
-
     @Nonnull
     @Override
     public CompletableFuture<Member> memberAsync(long l, long l1) {
-        return SafeVertxCompletableFuture.completedFuture(member(l, l1));
+        return memberCache.getAsync(l, l1);
     }
 
     @Nonnull
     @Override
     public NamedCacheView<Member> members(long guildId) {
-        return memberCache.asNamedCacheView(guildId, Member::nick);
+        return memberCache.asNamedCacheView(guildId, (member) -> member.nick() == null ? "null" : member.nick());
     }
 
     @Nonnull
     @Override
     public NamedCacheView<Member> members() {
-        return memberCache.asNamedCacheView(Member::nick);
-    }
-
-    @Nullable
-    @Override
-    public Role role(long guildId, long id) {
-        return rolesCache.get(guildId, id);
+        return memberCache.asNamedCacheView((member) -> member.nick() == null ? "null" : member.nick());
     }
 
     @Nonnull
     @Override
     public CompletableFuture<Role> roleAsync(long l, long l1) {
-        return SafeVertxCompletableFuture.completedFuture(role(l, l1));
+        return rolesCache.getAsync(l, l1);
     }
 
     @Nonnull
@@ -451,16 +423,10 @@ public class RedisCacheWorker implements EntityCacheWorker {
         return rolesCache.asNamedCacheView(Role::name);
     }
 
-    @Nullable
-    @Override
-    public GuildChannel channel(long guildId, long id) {
-        return channelCache.get(guildId, id);
-    }
-
     @Nonnull
     @Override
     public CompletableFuture<GuildChannel> channelAsync(long l, long l1) {
-        return SafeVertxCompletableFuture.completedFuture(channel(l, l1));
+        return channelCache.getAsync(l, l1);
     }
 
     @Nonnull
@@ -475,16 +441,10 @@ public class RedisCacheWorker implements EntityCacheWorker {
         return channelCache.asNamedCacheView(GuildChannel::name);
     }
 
-    @Nullable
-    @Override
-    public UserDMChannel dmChannel(long id) {
-        return dmChannelCache.get(id);
-    }
-
     @Nonnull
     @Override
     public CompletableFuture<UserDMChannel> dmChannelAsync(long l) {
-        return SafeVertxCompletableFuture.completedFuture(dmChannel(l));
+        return dmChannelCache.getAsync(l);
     }
 
     @Nonnull
@@ -493,40 +453,28 @@ public class RedisCacheWorker implements EntityCacheWorker {
         return dmChannelCache.asCacheView();
     }
 
-    @Nullable
-    @Override
-    public Emoji.CustomEmoji emoji(long guildId, long id) {
-        return emojiCache.get(guildId, id);
-    }
-
     @Nonnull
     @Override
     public CompletableFuture<Emoji.CustomEmoji> emojiAsync(long l, long l1) {
-        return SafeVertxCompletableFuture.completedFuture(emoji(l, l1));
+        return emojiCache.getAsync(l, l1);
     }
 
     @Nonnull
     @Override
     public NamedCacheView<Emoji.CustomEmoji> emojis(long guildId) {
-        return emojiCache.asNamedCacheView(guildId, Emoji::name);
+        return emojiCache.asNamedCacheView(guildId, Emoji.CustomEmoji::name);
     }
 
     @Nonnull
     @Override
     public NamedCacheView<Emoji.CustomEmoji> emojis() {
-        return emojiCache.asNamedCacheView(Emoji::name);
-    }
-
-    @Nullable
-    @Override
-    public VoiceState voiceState(long guildId, long id) {
-        return voiceStateCache.get(guildId, String.valueOf(id));
+        return emojiCache.asNamedCacheView(Emoji.CustomEmoji::name);
     }
 
     @Nonnull
     @Override
     public CompletableFuture<VoiceState> voiceStateAsync(long l, long l1) {
-        return SafeVertxCompletableFuture.completedFuture(voiceState(l, l1));
+        return voiceStateCache.getAsync(l, String.valueOf(l1));
     }
 
     @Nonnull
@@ -545,6 +493,17 @@ public class RedisCacheWorker implements EntityCacheWorker {
     @Override
     public CompletableFuture<User> selfUserAsync() {
         return SafeVertxCompletableFuture.completedFuture(selfUser.get());
+    }
+
+    private Future<Void> future(CompletableFuture<?>... futures) {
+        return future(catnip, futures);
+    }
+
+    private Future<Void> future(Catnip catnip, CompletableFuture<?>... futures) {
+        Future<Void> vertxFuture = Future.future();
+        SafeVertxCompletableFuture<Void> future = SafeVertxCompletableFuture.allOf(catnip, futures);
+        future.thenAccept((__) -> vertxFuture.complete());
+        return vertxFuture;
     }
 
 }
