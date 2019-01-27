@@ -56,7 +56,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +68,7 @@ import java.util.stream.Collectors;
 public class RedisCacheWorker implements EntityCacheWorker {
 
     private final Logger log = LoggerFactory.getLogger(RedisCacheWorker.class);
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     private Catnip catnip;
     private EntityBuilder entityBuilder;
@@ -155,11 +159,15 @@ public class RedisCacheWorker implements EntityCacheWorker {
     public Future<java.lang.Void> updateCache(@Nonnull String eventType, int shardId, @Nonnull JsonObject payload) {
         switch (eventType) {
             // Lifecycle
-            case Raw.READY:
-                try (Jedis redis = redisSource.jedis()) {
-                    redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
-                }
-                break;
+            case Raw.READY: {
+                var future = CompletableFuture.supplyAsync(() -> {
+                    try (Jedis redis = redisSource.jedis()) {
+                        redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
+                    }
+                    return null;
+                }, executor);
+                return future(future);
+            }
             // Channels
             case Raw.CHANNEL_CREATE:
             case Raw.CHANNEL_UPDATE: {
@@ -270,15 +278,17 @@ public class RedisCacheWorker implements EntityCacheWorker {
                 }
                 break;
             }
-
             case Raw.USER_UPDATE:
                 var user = entityBuilder.createUser(payload);
-                if (user.equals(selfUser.get()))
-                    selfUser.set(user);
-                try (Jedis redis = redisSource.jedis()) {
-                    redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
-                }
-                return future(userCache.cache(shardId, user));
+                var future = CompletableFuture.supplyAsync(() -> {
+                    if (user.equals(selfUser.get()))
+                        selfUser.set(user);
+                    try (Jedis redis = redisSource.jedis()) {
+                        redis.set("selfUser", entityBuilder.createUser(payload.getJsonObject("user")).toJson().encode());
+                    }
+                    return null;
+                }, executor);
+                return future(catnip, future, userCache.cache(shardId, user));
 
         }
         return Future.succeededFuture();
