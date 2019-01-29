@@ -323,6 +323,11 @@ public class RedisCacheWorker implements EntityCacheWorker {
         emojiCache.bulkCache(shardId, emoji);
     }
 
+    /**
+     * Not implemented because not needed
+     * @param shardId shard id
+     * @param presences presence list
+     */
     @Override
     public void bulkCachePresences(int shardId, @Nonnull Map<String, Presence> presences) {
 
