@@ -46,8 +46,9 @@ public class RabbitMQSource {
 
     /**
      * Constructor for RabbitMQ source
-     * @param vertx The Vertx instance that should be used
-     * @param hosts The list of hosts that should be connected to
+     *
+     * @param vertx    The Vertx instance that should be used
+     * @param hosts    The list of hosts that should be connected to
      * @param username The user name which should be used for authentication
      * @param password The user name which should be used for authentication
      */
@@ -63,6 +64,7 @@ public class RabbitMQSource {
 
     /**
      * Constructor for RabbitMQ source without authentication
+     *
      * @param vertx The Vertx instance that should be used
      * @param hosts The list of hosts that should be connected to
      * @see RabbitMQSource#RabbitMQSource(Vertx, List, String, String)
@@ -73,6 +75,7 @@ public class RabbitMQSource {
 
     /**
      * Constructor for RabbitMQ source without authentication and localhost as hostname
+     *
      * @param vertx The Vertx instance that should be used
      * @see RabbitMQSource#RabbitMQSource(Vertx, List)
      */
@@ -82,6 +85,7 @@ public class RabbitMQSource {
 
     /**
      * Constructor for RabbitMQ source without authentication and localhost as hostname and default Vert.x instance {@link Vertx#vertx()}
+     *
      * @see RabbitMQSource#RabbitMQSource(Vertx)
      */
     public RabbitMQSource() {
@@ -90,7 +94,8 @@ public class RabbitMQSource {
 
     /**
      * Connects to the RabbitMQ server.
-     * @param  resultHandler Handler for results
+     *
+     * @param resultHandler Handler for results
      * @see RabbitMQClient#create(Vertx, RabbitMQOptions)
      */
     public RabbitMQClient connect(Handler<AsyncResult<Void>> resultHandler) {

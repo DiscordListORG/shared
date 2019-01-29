@@ -25,7 +25,7 @@
 
     <groupId>org.discordlist.cloud</groupId>
     <artifactId>shared</artifactId>
-    <version>0.1.7</version>
+    <version>0.1.7.1</version>
     <packaging>jar</packaging>
     <name>Shared classes of Discordlist projects</name>
 
@@ -183,6 +183,12 @@
                         </link>
                         <link>
                             <url>http://xetorthio.github.io/jedis/</url>
+                        </link>
+                        <link>
+                            <url>http://fasterxml.github.io/jackson-databind/javadoc/2.9/</url>
+                        </link>
+                        <link>
+                            <url>https://vertx.io/docs/apidocs/</url>
                         </link>
                     </externalDocumentationLinks>
                 </configuration>

@@ -39,6 +39,7 @@ public abstract class JsonSerializable {
 
     /**
      * Serialization method
+     *
      * @return The json object as a String
      * @throws JsonProcessingException For more information check out this {@link ObjectMapper#writeValueAsString(Object)}
      */

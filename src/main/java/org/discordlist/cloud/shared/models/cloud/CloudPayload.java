@@ -35,8 +35,9 @@ public class CloudPayload extends JsonSerializable {
 
     /**
      * Constructor for payload
-     * @param event The name of the Event. See events here {@link com.mewna.catnip.shard.DiscordEvent.Raw}
-     * @param data The data of the event
+     *
+     * @param event  The name of the Event. See events here {@link com.mewna.catnip.shard.DiscordEvent.Raw}
+     * @param data   The data of the event
      * @param sentAt The timestamp of the event
      * @see com.mewna.catnip.shard.DiscordEvent.Raw
      */
@@ -75,6 +76,7 @@ public class CloudPayload extends JsonSerializable {
 
     /**
      * Parsing method for json-ified CloudPayload
+     *
      * @param jsonData The Json data
      * @return The parsed object
      * @throws IOException See more information here {@link ObjectMapper#readValue(String, Class)}
@@ -85,6 +87,7 @@ public class CloudPayload extends JsonSerializable {
 
     /**
      * Override of toString() method for better formatting
+     *
      * @return String-ified payload
      */
     @Override

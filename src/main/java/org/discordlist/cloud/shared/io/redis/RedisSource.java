@@ -37,7 +37,8 @@ public class RedisSource {
 
     /**
      * Constructor for RedisSource
-     * @param host The host of the redis instance
+     *
+     * @param host     The host of the redis instance
      * @param password The password for authentication
      */
     public RedisSource(String host, String password) {
@@ -48,8 +49,9 @@ public class RedisSource {
 
     /**
      * Constructor for RedisSource without authentication
+     *
      * @param host The host of the redis instance
-     * @see RedisSource#RedisSource(String, String)
+     * @see this#RedisSource(String, String)
      */
     public RedisSource(String host) {
         this(host, null);
@@ -57,7 +59,8 @@ public class RedisSource {
 
     /**
      * Constructor for RedisSource without authentication and localhost as host
-     * @see RedisSource#RedisSource(String)
+     *
+     * @see this#RedisSource(String)
      */
     public RedisSource() {
         this("localhost");
@@ -65,6 +68,7 @@ public class RedisSource {
 
     /**
      * Connects to Redis server
+     *
      * @param onSuccess Handler that is called after connection was successfully
      * @return The current RedisSource instance
      */

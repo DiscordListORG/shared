@@ -30,6 +30,7 @@ public enum RabbitKey {
 
     /**
      * Constructor for RabbitKey
+     *
      * @param key the key of the RabbitMQ queue
      */
     RabbitKey(String key) {
@@ -38,8 +39,9 @@ public enum RabbitKey {
 
     /**
      * Formats a RabbitKey
+     *
      * @param instanceName The current instance's name
-     * @param key The key of the queue
+     * @param key          The key of the queue
      * @return The formatted key
      */
     public static String get(String instanceName, String key) {
@@ -48,10 +50,11 @@ public enum RabbitKey {
 
     /**
      * Getter for event dispatcher queue
+     *
      * @param instanceName The current instance's name
+     * @return The formatted key
      * @see RabbitKey#QUEUE_DISCORD_EVENT_DISPATCH
      * @see RabbitKey#get(String, String)
-     * @return The formatted key
      */
     public static String getEventDispatchQueue(String instanceName) {
         return get(instanceName, QUEUE_DISCORD_EVENT_DISPATCH.key);
@@ -59,10 +62,11 @@ public enum RabbitKey {
 
     /**
      * Getter for dispatcher dispatcher queue
+     *
      * @param instanceName The current instance's name
+     * @return The formatted key
      * @see RabbitKey#EXCHANGE_SYSTEM_DISPATCH
      * @see RabbitKey#get(String, String)
-     * @return The formatted key
      */
     public static String getSystemDispatch(String instanceName) {
         return get(instanceName, EXCHANGE_SYSTEM_DISPATCH.key);

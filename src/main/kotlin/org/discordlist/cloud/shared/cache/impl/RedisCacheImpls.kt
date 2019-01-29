@@ -21,9 +21,6 @@
 
 package org.discordlist.cloud.shared.cache.impl
 
-import com.google.common.cache.CacheBuilder
-import com.google.common.cache.CacheLoader
-import com.google.common.cache.LoadingCache
 import com.mewna.catnip.Catnip
 import com.mewna.catnip.entity.Entity
 import com.mewna.catnip.entity.Snowflake
@@ -35,7 +32,6 @@ import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
 /**
@@ -44,7 +40,7 @@ import java.util.function.Supplier
  * @param V the type of the cached entities
  * @property identify method that it used to get the key by an entity's instance
  * @property stringify method that is used to stringify keys [K]
- * @property cacheType the type of the cache see [RedisCache.Companion]
+ * @property cacheType the type of the cache see [RedisCache]
  * @property clazz the class type of the entities
  * @property pool the [RedisSource]
  * @property builder method that is used to construct entities by json

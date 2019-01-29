@@ -38,8 +38,9 @@ public class Permission extends JsonSerializable {
 
     /**
      * Constructor for permissions
-     * @param group The PermissionGroup {@link org.discordlist.cloud.shared.models.guild.PermissionGroup}
-     * @param node The name of the node
+     *
+     * @param group     The PermissionGroup {@link org.discordlist.cloud.shared.models.guild.PermissionGroup}
+     * @param node      The name of the node
      * @param isDefault Whether the permission is default or not
      */
     public Permission(PermissionGroup group, String node, boolean isDefault) {
@@ -51,7 +52,8 @@ public class Permission extends JsonSerializable {
     /**
      * Used for deserialization
      */
-    public Permission() {}
+    public Permission() {
+    }
 
     /**
      * @return The permission group
@@ -76,6 +78,7 @@ public class Permission extends JsonSerializable {
 
     /**
      * Parsing method for json-ified Permission object
+     *
      * @param jsonData The Json data
      * @return The parsed object
      * @throws IOException See more information here {@link ObjectMapper#readValue(String, Class)}
@@ -86,6 +89,7 @@ public class Permission extends JsonSerializable {
 
     /**
      * Override for better capability
+     *
      * @param o The other object
      * @return Whether the objects are identical
      */
@@ -101,6 +105,7 @@ public class Permission extends JsonSerializable {
 
     /**
      * Override for better capability
+     *
      * @return The objects hashcode
      */
     @Override
@@ -110,6 +115,7 @@ public class Permission extends JsonSerializable {
 
     /**
      * Override for better capability
+     *
      * @return The stringified objects
      */
     @Override

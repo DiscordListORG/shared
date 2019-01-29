@@ -84,6 +84,7 @@ public class RedisCacheWorker implements EntityCacheWorker {
 
     /**
      * Constructor for RedisCacheWorker
+     *
      * @param redisSource the redis source {@link RedisSource} that is used for connecting to redis
      */
     public RedisCacheWorker(RedisSource redisSource) {

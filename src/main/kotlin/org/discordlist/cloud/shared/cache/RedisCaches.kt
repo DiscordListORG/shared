@@ -63,7 +63,7 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
     val stringify: (identifier: K) -> String
 
     /**
-     * The type of the Redis cache see [RedisCache.Companion]
+     * The type of the Redis cache see [RedisCache]
      */
     val cacheType: String
 
