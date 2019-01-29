@@ -107,7 +107,7 @@
         <dependency>
             <groupId>com.mewna</groupId>
             <artifactId>catnip</artifactId>
-            <version>0.13.0</version>
+            <version>0.13.1</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
