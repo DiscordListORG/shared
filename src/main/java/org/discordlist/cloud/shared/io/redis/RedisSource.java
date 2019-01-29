@@ -26,32 +26,54 @@ import redis.clients.jedis.JedisPoolConfig;
 import java.util.Objects;
 import java.util.function.Consumer;
 
+/**
+ * Wrapper class for Redis connections
+ */
 public class RedisSource {
 
     private final String host;
     private final String password;
     private JedisPool jedis;
 
+    /**
+     * Constructor for RedisSource
+     * @param host The host of the redis instance
+     * @param password The password for authentication
+     */
     public RedisSource(String host, String password) {
         Objects.requireNonNull(host);
         this.host = host;
         this.password = password;
     }
 
+    /**
+     * Constructor for RedisSource without authentication
+     * @param host The host of the redis instance
+     * @see RedisSource#RedisSource(String, String)
+     */
     public RedisSource(String host) {
         this(host, null);
     }
 
+    /**
+     * Constructor for RedisSource without authentication and localhost as host
+     * @see RedisSource#RedisSource(String)
+     */
     public RedisSource() {
         this("localhost");
     }
 
-    public RedisSource connect(Consumer<RedisSource> onSuccess) {
+    /**
+     * Connects to Redis server
+     * @param onSuccess Handler that is called after connection was successfully
+     * @return The current RedisSource instance
+     */
+    public RedisSource connect(Consumer<JedisPool> onSuccess) {
         JedisPoolConfig config = new JedisPoolConfig();
         config.setMaxTotal(15);
         config.setMaxIdle(15);
         jedis = new JedisPool(host);
-        onSuccess.accept(this);
+        onSuccess.accept(jedis);
         return this;
     }
 
@@ -75,9 +97,6 @@ public class RedisSource {
      */
     @Deprecated
     public Jedis getJedis() {
-        Jedis resource = jedis.getResource();
-        if (password != null)
-            resource.auth(password);
-        return resource;
+        return jedis();
     }
 }

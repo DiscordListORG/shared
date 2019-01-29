@@ -1,7 +1,7 @@
 /*
  * Shared files of the DLO Project
  *
- * Copyright (C) 2018  Yannick Seeger & Michael Rittmeister
+ * Copyright (C) 2019  Yannick Seeger & Michael Rittmeister
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +17,31 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/.
  */
 
-package org.discordlist.cloud.shared;
+package org.discordlist.cloud.shared.models;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * Utility class for serializable objects
+ */
 public abstract class JsonSerializable {
 
     private final ObjectMapper objectMapper;
 
+    /**
+     * Constructor
+     * Seriously, you know what a constructor is, right?
+     */
     public JsonSerializable() {
         objectMapper = new ObjectMapper();
     }
 
+    /**
+     * Serialization method
+     * @return The json object as a String
+     * @throws JsonProcessingException For more information check out this {@link ObjectMapper#writeValueAsString(Object)}
+     */
     public String toJson() throws JsonProcessingException {
         return objectMapper.writeValueAsString(this);
     }

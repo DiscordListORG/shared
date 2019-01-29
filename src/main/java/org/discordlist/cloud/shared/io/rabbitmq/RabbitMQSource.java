@@ -32,15 +32,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Wrapper class for connection to RabbitMQ
+ */
 public class RabbitMQSource {
 
     private final Vertx vertx;
-    private final  List<String> hosts;
+    private final List<String> hosts;
     private final String username;
     private final String password;
     private RabbitMQOptions rabbitMQOptions;
     private RabbitMQClient rabbitMQClient;
 
+    /**
+     * Constructor for RabbitMQ source
+     * @param vertx The Vertx instance that should be used
+     * @param hosts The list of hosts that should be connected to
+     * @param username The user name which should be used for authentication
+     * @param password The user name which should be used for authentication
+     */
     public RabbitMQSource(Vertx vertx, List<String> hosts, String username, String password) {
         Objects.requireNonNull(vertx);
         Objects.requireNonNull(hosts);
@@ -51,20 +61,37 @@ public class RabbitMQSource {
         this.password = password;
     }
 
-    public RabbitMQSource(Vertx vertx, List<String> host) {
-        this(vertx, host, null, null);
+    /**
+     * Constructor for RabbitMQ source without authentication
+     * @param vertx The Vertx instance that should be used
+     * @param hosts The list of hosts that should be connected to
+     * @see RabbitMQSource#RabbitMQSource(Vertx, List, String, String)
+     */
+    public RabbitMQSource(Vertx vertx, List<String> hosts) {
+        this(vertx, hosts, null, null);
     }
 
+    /**
+     * Constructor for RabbitMQ source without authentication and localhost as hostname
+     * @param vertx The Vertx instance that should be used
+     * @see RabbitMQSource#RabbitMQSource(Vertx, List)
+     */
     public RabbitMQSource(Vertx vertx) {
         this(vertx, Collections.singletonList("localhost"));
     }
 
+    /**
+     * Constructor for RabbitMQ source without authentication and localhost as hostname and default Vert.x instance {@link Vertx#vertx()}
+     * @see RabbitMQSource#RabbitMQSource(Vertx)
+     */
     public RabbitMQSource() {
         this(Vertx.vertx());
     }
 
     /**
      * Connects to the RabbitMQ server.
+     * @param  resultHandler Handler for results
+     * @see RabbitMQClient#create(Vertx, RabbitMQOptions)
      */
     public RabbitMQClient connect(Handler<AsyncResult<Void>> resultHandler) {
         RabbitMQOptions options = rabbitMQOptions != null ? new RabbitMQOptions(rabbitMQOptions) : new RabbitMQOptions();
@@ -80,6 +107,7 @@ public class RabbitMQSource {
 
     /**
      * Provide custom {@link RabbitMQOptions}.
+     *
      * @param rabbitMQOptions the {@link RabbitMQOptions} object
      * @return this for fluent use
      */
@@ -90,7 +118,6 @@ public class RabbitMQSource {
     }
 
     /**
-     *
      * @return this for fluent use
      */
     public RabbitMQClient client() {

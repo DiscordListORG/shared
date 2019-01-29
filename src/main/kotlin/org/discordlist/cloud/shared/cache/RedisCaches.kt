@@ -129,7 +129,7 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
     }
 
     /**
-     * Gets an entity from cache
+     * Uses [RedisCache.getAsync] sync
      * @param entityId The entities id
      * @return The entity
      */
@@ -137,6 +137,11 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
         return getAsync(entityId).get()
     }
 
+    /**
+     * Gets an entity from cache
+     * @param entityId The entities id
+     * @return The entity
+     */
     fun getAsync(entityId: K): CompletableFuture<V>
 
     /**
@@ -157,7 +162,7 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
     fun getAllAsync(): CompletableFuture<Collection<V>>
 
     /**
-     * Returns the whole cache
+     * User [RedisCache.getAllAsync] sync
      * @see DefaultCacheView
      * @see CacheView
      * @return all cached entities in a [CacheView]
@@ -166,10 +171,23 @@ interface RedisCache<K, V : Entity> : RequiresCatnip {
         return asCacheViewAsync().get()
     }
 
+    /**
+     * Returns the whole cache
+     * @see DefaultCacheView
+     * @see CacheView
+     * @return all cached entities in a [CacheView]
+     */
     fun asCacheViewAsync(): Future<CacheView<V>> {
         return getAllAsync().thenApplyAsync { it.asCacheView() }
     }
 
+    /**
+     * User [RedisCache.asNamedCacheViewAsync] sync
+     * @param nameFunction function then returns the name by the entity
+     * @see NamedCacheView
+     * @see DefaultNamedCacheView
+     * @return all cached entities in a [NamedCacheView]
+     */
     fun asNamedCacheViewAsync(nameFunction: (entity: V) -> String): Future<NamedCacheView<V>> {
         return getAllAsync().thenApplyAsync { it.asNamedCacheView(nameFunction) }
     }
@@ -305,6 +323,13 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
         return getAsync(GuildInformationContainer(guildId, entityId))
     }
 
+    /**
+     * Uses [GuildSpecificRedisCache.getAsync] sync
+     * @param guildId the id of the guild the entity is on
+     * @param entityId the id of the entity
+     * @return the entity
+     *
+     */
     fun get(guildId: Long, entityId: K): V {
         return getAsync(GuildInformationContainer(guildId, entityId)).get()
     }
@@ -325,7 +350,7 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
     fun delete(shardId: Int, guildId: Long): CompletableFuture<*>
 
     /**
-     * Equivalent of [RedisCache.getAll] for just getting entities of the specified guild
+     * Uses [GuildSpecificRedisCache.getAllAsync] sync
      * @param guildId the id of the guild
      * @see RedisCache.getAll
      * @return all cached entities in a [Collection]
@@ -334,10 +359,16 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
         return getAllAsync(guildId).get()
     }
 
+    /**
+     * Equivalent of [RedisCache.getAll] for just getting entities of the specified guild
+     * @param guildId the id of the guild
+     * @see RedisCache.getAll
+     * @return all cached entities in a [Collection]
+     */
     fun getAllAsync(guildId: Long): CompletableFuture<Collection<V>>
 
     /**
-     * Equivalent of [RedisCache.asCacheView] for just getting entities of the specified guild
+     * Uses [GuildSpecificRedisCache.asCacheView] sync
      * @param guildId the id of the guild
      * @see RedisCache.asCacheView
      * @return all cached entities in a [CacheView]
@@ -346,12 +377,18 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
         return getAll(guildId).asCacheView()
     }
 
+    /**
+     * Equivalent of [RedisCache.asCacheView] for just getting entities of the specified guild
+     * @param guildId the id of the guild
+     * @see RedisCache.asCacheView
+     * @return all cached entities in a [CacheView]
+     */
     fun asCacheViewAsync(guildId: Long): Future<CacheView<V>> {
         return getAllAsync(guildId).thenApplyAsync { it.asCacheView() }
     }
 
     /**
-     * Equivalent of [RedisCache.asNamedCacheView] for just getting entities of the specified guild
+     * Uses [GuildSpecificRedisCache.asNamedCacheView] sync
      * @param guildId the id of the guild
      * @see RedisCache.asNamedCacheView
      * @return all cached entities in a [NamedCacheView]
@@ -360,6 +397,12 @@ interface GuildSpecificRedisCache<K, V : Entity> : RedisCache<GuildSpecificRedis
         return getAll(guildId).asNamedCacheView(nameFunction)
     }
 
+    /**
+     * Equivalent of [RedisCache.asNamedCacheView] for just getting entities of the specified guild
+     * @param guildId the id of the guild
+     * @see RedisCache.asNamedCacheView
+     * @return all cached entities in a [NamedCacheView]
+     */
     fun asNamedCacheViewAsync(guildId: Long, nameFunction: (entity: V) -> String): Future<NamedCacheView<V>> {
         return getAllAsync(guildId).thenApplyAsync { it.asNamedCacheView(nameFunction) }
     }

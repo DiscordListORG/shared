@@ -59,7 +59,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +82,10 @@ public class RedisCacheWorker implements EntityCacheWorker {
     private final AtomicReference<User> selfUser = new AtomicReference<>(null);
     private final RedisSource redisSource;
 
+    /**
+     * Constructor for RedisCacheWorker
+     * @param redisSource the redis source {@link RedisSource} that is used for connecting to redis
+     */
     public RedisCacheWorker(RedisSource redisSource) {
         this.redisSource = redisSource;
         this.rolesCache = new GuildSpecificSnowflakeRedisCache<>(

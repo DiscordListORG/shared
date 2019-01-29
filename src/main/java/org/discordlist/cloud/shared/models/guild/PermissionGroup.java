@@ -21,6 +21,9 @@ package org.discordlist.cloud.shared.models.guild;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+/**
+ * Enum of permission groups
+ */
 public enum PermissionGroup {
     EVERYONE("eve"),
     SERVER_HEAD("ser"),

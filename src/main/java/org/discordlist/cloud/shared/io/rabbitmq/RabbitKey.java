@@ -19,24 +19,51 @@
 
 package org.discordlist.cloud.shared.io.rabbitmq;
 
+/**
+ * Wrapper class for RabbitMQ keys
+ */
 public enum RabbitKey {
     QUEUE_DISCORD_EVENT_DISPATCH("discord_event_dispatch"),
     EXCHANGE_SYSTEM_DISPATCH("system_dispatch");
 
     public final String key;
 
+    /**
+     * Constructor for RabbitKey
+     * @param key the key of the RabbitMQ queue
+     */
     RabbitKey(String key) {
         this.key = key;
     }
 
+    /**
+     * Formats a RabbitKey
+     * @param instanceName The current instance's name
+     * @param key The key of the queue
+     * @return The formatted key
+     */
     public static String get(String instanceName, String key) {
         return String.format("dlo.%s.%s", instanceName, key);
     }
 
+    /**
+     * Getter for event dispatcher queue
+     * @param instanceName The current instance's name
+     * @see RabbitKey#QUEUE_DISCORD_EVENT_DISPATCH
+     * @see RabbitKey#get(String, String)
+     * @return The formatted key
+     */
     public static String getEventDispatchQueue(String instanceName) {
         return get(instanceName, QUEUE_DISCORD_EVENT_DISPATCH.key);
     }
 
+    /**
+     * Getter for dispatcher dispatcher queue
+     * @param instanceName The current instance's name
+     * @see RabbitKey#EXCHANGE_SYSTEM_DISPATCH
+     * @see RabbitKey#get(String, String)
+     * @return The formatted key
+     */
     public static String getSystemDispatch(String instanceName) {
         return get(instanceName, EXCHANGE_SYSTEM_DISPATCH.key);
     }
