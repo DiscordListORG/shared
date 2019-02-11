@@ -59,11 +59,7 @@ open class RedisCacheImpl<K, V : Entity>(
         protected val serializer: (entity: V) -> ByteArray
 ) : RedisCache<K, V> {
 
-    companion object {
-        val threadPool = Executors.newCachedThreadPool()!!
-    }
-
-    protected val executor = Executors.newCachedThreadPool()
+    protected val executor = Executors.newCachedThreadPool()!!
 
     constructor(identify: (entity: V) -> K,
                 stringify: (identifier: K) -> String,
@@ -71,7 +67,8 @@ open class RedisCacheImpl<K, V : Entity>(
                 clazz: Class<V>,
                 pool: RedisSource) : this(identify, stringify, cacheType, clazz, pool, { json, cache -> cache.decodeEntity(json.encode().toByteArray()) }, { it.toJson().encode().toByteArray() })
 
-    private var catnip: Catnip? = null
+    private lateinit var catnip: Catnip
+
     protected val log = LoggerFactory.getLogger(RedisCacheImpl::class.java)!!
 
     fun V.toByteArray(): ByteArray {
@@ -168,7 +165,7 @@ open class RedisCacheImpl<K, V : Entity>(
     }
 
     override fun catnip(): Catnip {
-        return catnip!!
+        return catnip
     }
 }
 
