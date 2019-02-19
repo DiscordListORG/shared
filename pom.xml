@@ -25,7 +25,7 @@
 
     <groupId>org.discordlist.cloud</groupId>
     <artifactId>shared</artifactId>
-    <version>0.1.8.3</version>
+    <version>0.1.8.4</version>
     <packaging>jar</packaging>
     <name>Shared classes of Discordlist projects</name>
 
@@ -105,9 +105,9 @@
             <version>3.6.2</version>
         </dependency>
         <dependency>
-            <groupId>com.mewna</groupId>
+            <groupId>com.github.discordlistorg</groupId>
             <artifactId>catnip</artifactId>
-            <version>0.14.0</version>
+            <version>-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>redis.clients</groupId>
