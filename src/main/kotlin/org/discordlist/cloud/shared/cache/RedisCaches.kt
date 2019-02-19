@@ -1,4 +1,4 @@
-/*
+/**
  * Shared files of the DLO Project
  *
  * Copyright (C) 2019  Yannick Seeger & Michael Rittmeister
