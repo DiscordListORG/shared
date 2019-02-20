@@ -138,7 +138,7 @@ public class RedisCacheWorker implements EntityCacheWorker {
                         case TEXT:
                             return Entity.fromJson(catnip, TextChannel.class, json);
                         case VOICE:
-                            return Entity.fromJson(catnip, Category.class, json);
+                            return Entity.fromJson(catnip, VoiceChannel.class, json);
                         case CATEGORY:
                             return Entity.fromJson(catnip, Category.class, json);
                         default:
