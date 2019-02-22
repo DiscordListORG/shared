@@ -36,6 +36,7 @@ import com.mewna.catnip.entity.misc.Emoji;
 import com.mewna.catnip.entity.user.Presence;
 import com.mewna.catnip.entity.user.User;
 import com.mewna.catnip.entity.user.VoiceState;
+import com.mewna.catnip.shard.DiscordEvent;
 import com.mewna.catnip.shard.DiscordEvent.Raw;
 import com.mewna.catnip.util.SafeVertxCompletableFuture;
 import io.vertx.core.Future;
@@ -257,9 +258,15 @@ public class RedisCacheWorker implements EntityCacheWorker {
                 break;
             }
             case Raw.GUILD_MEMBER_REMOVE: {
-                final var guild = payload.getLong("guild_id");
+                final var guild = payload.getString("guild_id");
                 final var user = payload.getJsonObject("user").getLong("id");
-                return future(memberCache.delete(shardId, guild, user));
+                return future(memberCache.delete(shardId, Long.parseLong(guild), user));
+            }
+            // Add member on join
+            case Raw.GUILD_MEMBER_ADD : {
+                var guild = payload.getString("id");
+                var member = entityBuilder.createMember(guild, payload);
+                memberCache.cache(shardId, member);
             }
             case Raw.GUILD_MEMBERS_CHUNK: {
                 final long guild = payload.getLong("guild_id");
