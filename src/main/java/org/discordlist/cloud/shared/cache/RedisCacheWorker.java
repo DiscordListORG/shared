@@ -229,8 +229,8 @@ public class RedisCacheWorker implements EntityCacheWorker {
                 return future(rolesCache.cache(shardId, role));
             }
             case Raw.GUILD_ROLE_DELETE: {
-                final long guild = payload.getLong("guild_id");
-                final long role = payload.getLong("role_id");
+                final long guild = Long.parseLong(payload.getString("guild_id"));
+                final long role = Long.parseLong(payload.getString("role_id"));
                 return future(rolesCache.delete(shardId, guild, role));
             }
             case Raw.GUILD_MEMBER_UPDATE: {
@@ -259,8 +259,8 @@ public class RedisCacheWorker implements EntityCacheWorker {
             }
             case Raw.GUILD_MEMBER_REMOVE: {
                 final var guild = payload.getString("guild_id");
-                final var user = payload.getJsonObject("user").getLong("id");
-                return future(memberCache.delete(shardId, Long.parseLong(guild), user));
+                final var user = payload.getJsonObject("user").getString("id");
+                return future(memberCache.delete(shardId, Long.parseLong(guild), Long.parseLong(user)));
             }
             // Add member on join
             case Raw.GUILD_MEMBER_ADD : {
@@ -271,14 +271,14 @@ public class RedisCacheWorker implements EntityCacheWorker {
                 userCache.cache(shardId, user);
             }
             case Raw.GUILD_MEMBERS_CHUNK: {
-                final long guild = payload.getLong("guild_id");
+                final long guild = Long.parseLong(payload.getString("guild_id"));
                 final JsonArray members = payload.getJsonArray("members");
                 return future(members.stream().map(e -> memberCache.cache(guild, shardId, entityBuilder.createMember(String.valueOf(guild), (JsonObject) e))).collect(Collectors.toList()).toArray(CompletableFuture[]::new));
             }
 
             case Raw.GUILD_EMOJIS_UPDATE: {
                 if (!catnip.cacheFlags().contains(CacheFlag.DROP_EMOJI)) {
-                    final Long guild = payload.getLong("guild_id");
+                    final Long guild = Long.parseLong(payload.getString("guild_id"));
                     final JsonArray emojis = payload.getJsonArray("emojis");
                     return future(emojis.stream().map(e -> emojiCache.cache(guild, shardId, entityBuilder.createCustomEmoji(String.valueOf(guild), (JsonObject) e))).collect(Collectors.toList()).toArray(CompletableFuture[]::new));
                 }
