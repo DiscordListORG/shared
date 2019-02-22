@@ -266,7 +266,9 @@ public class RedisCacheWorker implements EntityCacheWorker {
             case Raw.GUILD_MEMBER_ADD : {
                 var guild = payload.getString("guild_id");
                 var member = entityBuilder.createMember(guild, payload);
+                var user = entityBuilder.createUser(payload.getJsonObject("user"));
                 memberCache.cache(shardId, member);
+                userCache.cache(shardId, user)
             }
             case Raw.GUILD_MEMBERS_CHUNK: {
                 final long guild = payload.getLong("guild_id");
