@@ -25,7 +25,7 @@
 
     <groupId>org.discordlist.cloud</groupId>
     <artifactId>shared</artifactId>
-    <version>0.1.8.8</version>
+    <version>0.1.8.9</version>
     <packaging>jar</packaging>
     <name>Shared classes of Discordlist projects</name>
 

@@ -82,8 +82,9 @@ open class RedisCacheImpl<K, V : Entity>(
     fun entityFromByteArray(byteArray: ByteArray?): V {
         return if (byteArray != null)
             builder(JsonObject(String(byteArray)), this)
-        else
-            Entity.fromJson(catnip(), clazz, JsonObject("[\"null\"]"))
+        else {
+            Entity.fromJson(catnip(), clazz, JsonObject("{\"null\":\"null\"}"))
+        }
 
     }
 
@@ -129,6 +130,7 @@ open class RedisCacheImpl<K, V : Entity>(
                         return entityFromByteArray(result)
             }
         }
+        log.error("Cannot find ${clazz.name} by ${stringify(entityId)}")
         return entityFromByteArray(null)
     }
 
